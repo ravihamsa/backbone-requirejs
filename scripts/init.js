@@ -1,15 +1,19 @@
 var pageRootEl = $('.page-container');
 var currentPage ;
 
+require.config({
+    paths: {
+        text: 'assets/requirejs-text-plugin'
+    }
+})
 
-//require.config();
 
 var Router = Backbone.Router.extend({
     routes: {
-        ':pageId': 'renderPage'
+        ':pageId': 'renderPage',
+        '':'renderDefaultPage'
     },
     renderPage: function (pageId) {
-
         if(currentPage){
             currentPage.remove();
         }
@@ -22,6 +26,9 @@ var Router = Backbone.Router.extend({
             currentPage.render().$el.appendTo(pageRootEl);
         })
 
+    },
+    renderDefaultPage: function(){
+        this.renderPage('page1');
     }
 })
 
