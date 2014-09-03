@@ -6,7 +6,11 @@ define( function(){
         template: 'this is default page',
         render: function () {
             this.$el.html(this.template);
+            this.afterRender();
             return this;
+        },
+        afterRender: function(){
+
         }
     });
 
