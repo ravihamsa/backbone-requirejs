@@ -1,35 +1,48 @@
-define(['pages/defaultPage', 'widgets/table'], function(DefaultPage, TableWidget){
+define(['pages/defaultPage', 'widgets/table', 'models/user'], function (DefaultPage, TableWidget, user) {
 
     "use strict";
 
-    var UserModel = Backbone.Model.extend({
-        idAttribute:'_id'
-    });
-
-    var UserCollection = Backbone.Collection.extend({
-        model:UserModel,
-        url:'http://localhost/api/rest/users/',
-        parse: function(resp){
-            return resp.result;
+    var UserTable = TableWidget.extend({
+        events:{
+            'click a.remove':'removeHandler'
+        },
+        removeHandler:function(e){
+            e.preventDefault();
+            var target = $(e.target);
+            var modelId = target.data('id');
+            var model = this.collection.get(modelId);
+            model.destroy();
         }
     })
 
     var View = DefaultPage.View.extend({
-        initialize:function(){
+        initialize: function () {
 
-            var userCollection = this.userCollection = new UserCollection();
-            userCollection.on('all', function(){
-                console.log(arguments);
-            });
-            this.userDef = userCollection.fetch();
         },
         template: '<div class="user-table"> </div>',
-        afterRender: function(){
+        afterRender: function () {
             var _this = this;
-            this.userDef.done(function(){
-               var tableWidget = new TableWidget({
-                   collection: _this.userCollection
-               });
+            user.userDef.done(function () {
+                var tableWidget = new UserTable({
+                    collection: user.userCollection,
+                    columns: new Backbone.Collection([
+                        {id: 'firstName',
+                            name: 'Full Name',
+                            formatter: function () {
+                                return this.get('firstName') + ' ' + this.get('lastName');
+                            }
+                        },
+                        {id: 'designation', name: 'Designation'},
+                        {id: 'department', name: 'Department'},
+                        {id: 'remove', name: '',  renderHTML:true, formatter: function () {
+                            return '<a href="#remove" data-id="'+this.id+'" class="remove">x</a>';
+                        }},
+                        {id: 'edit', name: '',  renderHTML:true, formatter: function () {
+
+                            return '<a href="#editUser/userId='+this.id+'">edit</a>';
+                        }}
+                    ])
+                });
                 tableWidget.render();
                 tableWidget.$el.appendTo(_this.$('.user-table'));
             });
@@ -37,6 +50,6 @@ define(['pages/defaultPage', 'widgets/table'], function(DefaultPage, TableWidget
     });
 
     return {
-        View:View
+        View: View
     }
 })

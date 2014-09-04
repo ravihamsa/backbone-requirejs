@@ -1,9 +1,41 @@
 var pageRootEl = $('.page-container');
 var currentPage ;
 
+var paramsToObject = function(params) {
+    if (!params) {
+        return {};
+    }
+    var paramsArray = _.map(params.split(';'), function(str) {
+        return str.split('=');
+    });
+    var obj = {};
+    _.each(paramsArray, function(arr) {
+        obj[arr[0]] = arr[1];
+    });
+    return obj;
+};
+
+
+Handlebars.registerHelper('logThis', function(options) {
+    console.log(this);
+    return '';
+});
+
+
 require.config({
     paths: {
-        text: 'assets/requirejs-text-plugin'
+        text: 'assets/requirejs-text-plugin',
+        marionette:'assets/backbone.marionette',
+        backbone:'assets/backbone',
+        underscore:'assets/underscore'
+    },
+    shim:{
+        backbone:{
+            exports:'Backbone'
+        },
+        underscore:{
+            exports:'_'
+        }
     }
 })
 
@@ -11,18 +43,25 @@ require.config({
 var Router = Backbone.Router.extend({
     routes: {
         ':pageId': 'renderPage',
+        ':pageId/*params': 'renderPage',
         '':'renderDefaultPage'
     },
-    renderPage: function (pageId) {
+    renderPage: function (pageId, params) {
         if(currentPage){
             currentPage.remove();
         }
         pageRootEl.empty();
 
+        var paramsObject = paramsToObject(params);
+        paramsObject.pageId = pageId;
 
-        require(['pages/'+pageId], function(Page){
+
+        require(['models/app', 'pages/'+pageId], function(app, Page){
+            app.setPageAttributes(paramsObject);
             currentPage = new Page.View({
+
             });
+
             currentPage.render().$el.appendTo(pageRootEl);
         })
 
@@ -32,9 +71,7 @@ var Router = Backbone.Router.extend({
     }
 })
 
-
 var router = new Router();
-
 
 Backbone.history.start({
     root: this.root
