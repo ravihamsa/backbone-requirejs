@@ -22,12 +22,15 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/app'], funct
 
                 var elements = [{
                     id:'firstName',
+                    label:'First Name',
                     type:'text'
                 },{
                     id:'lastName',
+                    label:'Last Name',
                     type:'text'
                 }, {
                     id:'designation',
+                    label:'Designation',
                     type:'text'
                 }]
 
