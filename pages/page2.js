@@ -19,7 +19,7 @@ define(['pages/defaultPage', 'widgets/table', 'models/user'], function (DefaultP
         initialize: function () {
 
         },
-        template: '<div class="user-table"> </div>',
+        template: '<a href="#createUser">Create User</a> <div class="user-table"> </div>',
         afterRender: function () {
             var _this = this;
             user.userDef.done(function () {
