@@ -40,39 +40,44 @@ require.config({
 })
 
 
-var Router = Backbone.Router.extend({
-    routes: {
-        ':pageId': 'renderPage',
-        ':pageId/*params': 'renderPage',
-        '':'renderDefaultPage'
-    },
-    renderPage: function (pageId, params) {
-        if(currentPage){
-            currentPage.remove();
+require(['models/app'], function(app){
+    var Router = Backbone.Router.extend({
+        routes: {
+            ':pageId': 'renderPage',
+            ':pageId/*params': 'renderPage',
+            '':'renderDefaultPage'
+        },
+        renderPage: function (pageId, params) {
+            if(currentPage){
+                currentPage.remove();
+            }
+            pageRootEl.empty();
+
+            var paramsObject = paramsToObject(params);
+            paramsObject.pageId = pageId;
+
+
+            require(['models/app', 'pages/'+pageId], function(app, Page){
+                app.setPageAttributes(paramsObject);
+                currentPage = new Page.View({
+
+                });
+
+                currentPage.render().$el.appendTo(pageRootEl);
+            })
+
+        },
+        renderDefaultPage: function(){
+            this.renderPage('page1');
         }
-        pageRootEl.empty();
+    })
 
-        var paramsObject = paramsToObject(params);
-        paramsObject.pageId = pageId;
+    app.router = new Router();
+
+    Backbone.history.start({
+        root: this.root
+    });
 
 
-        require(['models/app', 'pages/'+pageId], function(app, Page){
-            app.setPageAttributes(paramsObject);
-            currentPage = new Page.View({
-
-            });
-
-            currentPage.render().$el.appendTo(pageRootEl);
-        })
-
-    },
-    renderDefaultPage: function(){
-        this.renderPage('page1');
-    }
-})
-
-var router = new Router();
-
-Backbone.history.start({
-    root: this.root
 });
+
