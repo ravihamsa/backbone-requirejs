@@ -17,6 +17,9 @@ define(['./bareModel'], function(BareModel){
         },
         getPageAttribute:function(attrName){
             return pageModel.get(attrName);
+        },
+        compileTemplate: function(str){
+            return Handlebars.compile(str);
         }
     }
 

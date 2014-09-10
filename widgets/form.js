@@ -1,12 +1,13 @@
-define(['text!./form.html', './element'], function (formTemplate, Element) {
+define(['text!./form.html', './element', './customElements'], function (formTemplate, Element, customElements) {
 
     var FormView = Backbone.Marionette.CompositeView.extend({
         events: {
             'submit form': 'formSubmitHandler'
         },
         template: Handlebars.compile(formTemplate),
-        getChildView: function () {
-            return Element.View
+        getChildView: function (model) {
+            var elementType = model.get('type');
+            return customElements[elementType] || Element.View;
         },
         childViewContainer: function () {
             return '.elements';

@@ -4,12 +4,15 @@ define(['text!./element.html'],function(elementTemplate){
 
   var View = Backbone.Marionette.ItemView.extend({
       events:{
-          'change input.js-change':'updateValue'
+          'change .js-update-change':'updateValue'
       },
       template:Handlebars.compile(elementTemplate),
       updateValue: function(){
-          var value = this.$('input.js-change').val();
+          var value = this.$('.js-update-change').val();
           this.model.set('value', value);
+      },
+      onRender: function () {
+          this.updateValue();
       }
   });
 
