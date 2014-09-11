@@ -78,6 +78,17 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
                     showAdd:_this.collection.length < valueOptions.length
                 })
             });
+            this.updateValue();
+        },
+        updateValue: function(){
+            var value = []
+            this.collection.each(function(model, index){
+                var selectedOption = model.get('selectedOption');
+                if(selectedOption){
+                    value.push(selectedOption.id);
+                }
+            });
+            this.model.set('value', value.join(','));
         }
     })
 
@@ -91,6 +102,10 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
             listView.addItem();
             listView.render();
             listView.$el.appendTo(this.$('.element'));
+            this.listView = listView;
+        },
+        updateValue: function(){
+            this.listView.updateValue();
         }
 
     });
