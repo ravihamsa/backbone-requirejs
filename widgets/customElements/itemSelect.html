@@ -1,9 +1,21 @@
 <div class="element-item">
     <select name="{{id}}" class="js-update-change">
+        <option value="-1">Select</option>
+        {{#if selectedOption}}
+        <option value="{{selectedOption.id}}" selected> {{selectedOption.name}}</option>
+        {{/if}}
         {{#each options}}
-        <option value="{{id}}">{{name}}</option>
+            {{#isNotTrue selected}}
+            <option value="{{id}}">{{name}}</option>
+            {{/isNotTrue}}
         {{/each}}
     </select>
+
+    {{#if showRemove}}
     <a href="#removeItem" class="remove">remove</a>
+    {{/if}}
+
+    {{#if showAdd}}
     <a href="#addItem" class="add">add</a>
+    {{/if}}
 </div>
