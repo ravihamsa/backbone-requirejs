@@ -17,9 +17,10 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
                 showRemove:this.collection.length !== 0,
                 showAdd:this.collection.length < valueOptions.length
             };
-            this.collection.add(obj);
+            var objModel = this.collection.add(obj);
             this.updateRemoveStatus();
             this.render();
+            return this.collection.get(obj.id);
         },
         onOptionRemoveItem: function(view, options){
             this.collection.remove(options.model);
@@ -88,6 +89,7 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
                     value.push(selectedOption.id);
                 }
             });
+
             this.model.set('value', value.join(','));
         }
     })
@@ -95,17 +97,45 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
     var View = Element.View.extend({
         template:app.compileTemplate(elementTemplate),
         onRender: function(){
+            console.log(this.model.toJSON())
+
             var listView = new SelectListView({
                 model:this.model,
                 collection:new Backbone.Collection()
             });
-            listView.addItem();
+            this.listView = listView;
+            this.setValue();
             listView.render();
             listView.$el.appendTo(this.$('.element'));
-            this.listView = listView;
+
+
         },
         updateValue: function(){
             this.listView.updateValue();
+        },
+        setValue: function(){
+            var _this = this;
+            var value = this.model.get('value');
+            if(!value){
+                _this.listView.addItem();
+                return;
+            }
+            var valueOptionCollection = new Backbone.Collection(this.model.get('options'));
+            var valueArray = _.map(value.split( ','), function(item){
+                return valueOptionCollection.get($.trim(item)).toJSON();
+            })
+
+
+            _.each(valueArray, function(valueItem){
+                var addedModel = _this.listView.addItem();
+                var childView = _this.listView.children.findByModelCid(addedModel.cid);
+                childView.$('select').val(valueItem.id);
+                console.log(childView.$('select').trigger('change'));
+
+            });
+            console.log(valueArray);
+
+
         }
 
     });

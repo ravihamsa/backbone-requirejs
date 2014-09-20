@@ -65,7 +65,8 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/app'], funct
                     }, {
                         id:'dep7',
                         name:'Department7'
-                    }]
+                    }],
+                    value:'dep1, dep2'
                 }]
 
                 var elementCollection = new Form.ElementCollection(elements);
