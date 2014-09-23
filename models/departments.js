@@ -3,23 +3,22 @@ define(function(){
         idAttribute: '_id'
     });
 
-    var UserCollection = Backbone.Collection.extend({
+    var DeptCollection = Backbone.Collection.extend({
         model: UserModel,
-        url: 'http://localhost/api/rest/users/',
+        url: 'http://localhost/api/rest/departments/',
         parse: function (resp) {
             _.each(resp.result, function(item){
                 item.id = item._id;
             })
-
             return resp.result;
         }
     })
 
-    var userCollection = new UserCollection();
-    var userDef = userCollection.fetch();
+    var deptCollection = new DeptCollection();
+    var deptDef = deptCollection.fetch();
 
     return {
-        userCollection:userCollection,
-        userDef: userDef
+        collection:deptCollection,
+        def: deptDef
     }
 })

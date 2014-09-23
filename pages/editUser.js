@@ -1,4 +1,4 @@
-define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/app'], function(DefaultPage, Form, user, app){
+define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/departments', 'models/designations', 'models/app'], function(DefaultPage, Form, user, departments,designations,app){
 
     "use strict";
 
@@ -8,7 +8,10 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/app'], funct
             _.each(valueObject, function(value, attributeName){
                 userModel.set(attributeName, value);
             })
-            userModel.save(valueObject, {patch:true});
+            var def = userModel.save(valueObject, {patch:true});
+            def.done(function(){
+                app.router.navigate('#page2', {trigger:true});
+            })
         }
     })
 
@@ -17,26 +20,49 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/app'], funct
         template: 'Page 4 <div class="user-form"> </div>',
         afterRender: function(){
             var _this = this;
-            user.userDef.done(function(){
+            $.when( user.userDef, departments.def, designations.def).then(function(){
+
                 var userModel = user.userCollection.get(app.getPageAttribute('userId'));
 
                 var elements = [{
-                    id:'firstName',
-                    label:'First Name',
-                    type:'text'
-                },{
-                    id:'lastName',
-                    label:'Last Name',
-                    type:'text'
+                    id:'name',
+                    label:'Name',
+                    type:'name'
                 }, {
                     id:'designation',
                     label:'Designation',
-                    type:'text'
+                    type:'selectList',
+                    options:designations.collection.toJSON()
+                }, {
+                    id:'gender',
+                    label:'Gender',
+                    type:'select',
+                    options:[{
+                        id:'m',
+                        name:'Male'
+                    }, {
+                        id:'f',
+                        name:'Female'
+                    }]
+                }, {
+                    id:'department',
+                    label:'Department',
+                    type:'selectList',
+                    options:departments.collection.toJSON()
                 }]
 
-                _.each(elements, function(element){
-                    element.value = userModel.get(element.id);
-                })
+                _.each(elements, function(item){
+                    if(item.id === 'name'){
+                        item.value = {
+                            firstName:userModel.get('firstName'),
+                            lastName:userModel.get('lastName')
+                        }
+
+                    }else{
+                        item.value = userModel.get(item.id);
+                    }
+
+                });
 
                 var elementCollection = new Form.ElementCollection(elements);
 

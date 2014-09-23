@@ -83,6 +83,7 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
         },
         updateValue: function(){
             var value = []
+            console.log('updateValue', '-------');
             this.collection.each(function(model, index){
                 var selectedOption = model.get('selectedOption');
                 if(selectedOption){
@@ -96,30 +97,20 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
 
     var View = Element.View.extend({
         template:app.compileTemplate(elementTemplate),
-        onRender: function(){
-            console.log(this.model.toJSON())
-
+        postRenderElement: function(){
             var listView = new SelectListView({
                 model:this.model,
                 collection:new Backbone.Collection()
             });
             this.listView = listView;
-            this.setValue();
             listView.render();
             listView.$el.appendTo(this.$('.element'));
-
-
         },
         updateValue: function(){
             this.listView.updateValue();
         },
-        setValue: function(){
+        readValueFromModel: function(value){
             var _this = this;
-            var value = this.model.get('value');
-            if(!value){
-                _this.listView.addItem();
-                return;
-            }
             var valueOptionCollection = new Backbone.Collection(this.model.get('options'));
             var valueArray = _.map(value.split( ','), function(item){
                 return valueOptionCollection.get($.trim(item)).toJSON();
@@ -136,6 +127,9 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
             console.log(valueArray);
 
 
+        },
+        handleNoValue: function(){
+            this.listView.addItem();
         }
 
     });

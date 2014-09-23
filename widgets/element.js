@@ -11,8 +11,24 @@ define(['text!./element.html'],function(elementTemplate){
           var value = this.$('.js-update-change').val();
           this.model.set('value', value);
       },
+      postRenderElement: function(){
+
+      },
       onRender: function () {
+          this.postRenderElement();
+          var value = this.model.get('value');
+          if(value !== undefined && value !== null){
+              this.readValueFromModel(value);
+          }else{
+              this.handleNoValue();
+          }
           this.updateValue();
+      },
+      readValueFromModel: function(){
+       //does nothing here if handled by template;
+      },
+      handleNoValue:function(){
+
       }
   });
 

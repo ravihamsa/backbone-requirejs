@@ -1,4 +1,4 @@
-define(['pages/defaultPage', 'widgets/table', 'models/user'], function (DefaultPage, TableWidget, user) {
+define(['pages/defaultPage', 'widgets/table', 'models/user','models/departments', 'models/designations'], function (DefaultPage, TableWidget, user, departments,designations ) {
 
     "use strict";
 
@@ -22,7 +22,7 @@ define(['pages/defaultPage', 'widgets/table', 'models/user'], function (DefaultP
         template: '<a href="#createUser">Create User</a> <div class="user-table"> </div>',
         afterRender: function () {
             var _this = this;
-            user.userDef.done(function () {
+            $.when( user.userDef, departments.def, designations.def).then(function () {
                 var tableWidget = new UserTable({
                     collection: user.userCollection,
                     columns: new Backbone.Collection([
@@ -32,8 +32,18 @@ define(['pages/defaultPage', 'widgets/table', 'models/user'], function (DefaultP
                                 return this.get('firstName') + ' ' + this.get('lastName');
                             }
                         },
-                        {id: 'designation', name: 'Designation'},
-                        {id: 'department', name: 'Department'},
+                        {id: 'designation', name: 'Designation', formatter: function(value){
+                            var names = _.map(value.split(','), function(itemId){
+                                return designations.collection.get(itemId).get('name');
+                            })
+                            return names.join(', ');
+                        }},
+                        {id: 'department', name: 'Department', formatter: function(value){
+                            var names = _.map(value.split(','), function(itemId){
+                                return departments.collection.get(itemId).get('name');
+                            })
+                            return names.join(', ');
+                        }},
                         {id: 'remove', name: '',  renderHTML:true, formatter: function () {
                             return '<a href="#remove" data-id="'+this.id+'" class="remove">x</a>';
                         }},

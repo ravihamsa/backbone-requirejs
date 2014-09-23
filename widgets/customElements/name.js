@@ -9,6 +9,10 @@ define(['models/app','text!./name.html', './../element'],function(app, elementTe
                 lastName:this.$('.js-lastName').val()
             }
             this.model.set('value', value);
+        },
+        readValueFromModel: function(value){
+            this.$('.js-firstName').val(value.firstName);
+            this.$('.js-lastName').val(value.lastName);
         }
     });
 

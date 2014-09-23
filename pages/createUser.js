@@ -1,4 +1,4 @@
-define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/app'], function(DefaultPage, Form, user, app){
+define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/departments', 'models/designations', 'models/app'], function(DefaultPage, Form, user, departments,designations,  app){
 
     "use strict";
 
@@ -9,8 +9,11 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/app'], funct
             valueObject.lastName = valueObject.name.lastName;
             delete valueObject.name;
             console.log(valueObject);
-            //user.userCollection.create(valueObject);
-            //app.router.navigate('#page2', {trigger:true});
+            var def = user.userCollection.create(valueObject);
+            def.done(function(){
+                app.router.navigate('#page2', {trigger:true});
+            });
+
         }
     })
 
@@ -19,7 +22,7 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/app'], funct
         template: 'Page 4 <div class="user-form"> </div>',
         afterRender: function(){
             var _this = this;
-            user.userDef.done(function(){
+            $.when( user.userDef, departments.def, designations.def).then(function(){
 
                 var elements = [{
                     id:'name',
@@ -28,7 +31,8 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/app'], funct
                 }, {
                     id:'designation',
                     label:'Designation',
-                    type:'text'
+                    type:'selectList',
+                    options:designations.collection.toJSON()
                 }, {
                     id:'gender',
                     label:'Gender',
@@ -44,29 +48,7 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/app'], funct
                     id:'department',
                     label:'Department',
                     type:'selectList',
-                    options:[{
-                        id:'dep1',
-                        name:'Department1'
-                    }, {
-                        id:'dep2',
-                        name:'Department2'
-                    }, {
-                        id:'dep3',
-                        name:'Department3'
-                    }, {
-                        id:'dep4',
-                        name:'Department4'
-                    }, {
-                        id:'dep5',
-                        name:'Department5'
-                    }, {
-                        id:'dep6',
-                        name:'Department6'
-                    }, {
-                        id:'dep7',
-                        name:'Department7'
-                    }],
-                    value:'dep1, dep2'
+                    options:departments.collection.toJSON()
                 }]
 
                 var elementCollection = new Form.ElementCollection(elements);
