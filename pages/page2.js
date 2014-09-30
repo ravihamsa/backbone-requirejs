@@ -1,19 +1,27 @@
-define(['pages/defaultPage', 'widgets/table', 'models/user','models/departments', 'models/designations'], function (DefaultPage, TableWidget, user, departments,designations ) {
+define(['pages/defaultPage', 'widgets/table', 'models/user','models/departments', 'models/designations'], function (DefaultPage, Table, user, departments,designations ) {
 
     "use strict";
 
-    var UserTable = TableWidget.extend({
-        events:{
-            'click a.remove':'removeHandler'
-        },
-        removeHandler:function(e){
-            e.preventDefault();
-            var target = $(e.target);
-            var modelId = target.data('id');
-            var model = this.collection.get(modelId);
-            model.destroy();
+    var UserTable = Table.View.extend({
+        behaviors:{
+            TableSorter:{},
+            TableRowRemover:{}
         }
     })
+
+    var designationFormatter = function(value){
+        var names = _.map(value.split(','), function(itemId){
+            return designations.collection.get(itemId).get('name');
+        })
+        return names.join(', ');
+    }
+
+    var departmentFormatter = function(value){
+        var names = _.map(value.split(','), function(itemId){
+            return departments.collection.get(itemId).get('name');
+        })
+        return names.join(', ');
+    }
 
     var View = DefaultPage.View.extend({
         initialize: function () {
@@ -24,25 +32,39 @@ define(['pages/defaultPage', 'widgets/table', 'models/user','models/departments'
             var _this = this;
             $.when( user.userDef, departments.def, designations.def).then(function () {
                 var tableWidget = new UserTable({
+
                     collection: user.userCollection,
-                    columns: new Backbone.Collection([
+                    columns: new Table.ColumnCollection([
                         {id: 'firstName',
                             name: 'Full Name',
+                            sortable:true,
                             formatter: function () {
                                 return this.get('firstName') + ' ' + this.get('lastName');
                             }
                         },
-                        {id: 'designation', name: 'Designation', formatter: function(value){
-                            var names = _.map(value.split(','), function(itemId){
-                                return designations.collection.get(itemId).get('name');
-                            })
-                            return names.join(', ');
+                        {id: 'designation', name: 'Designation', sortable:true, formatter: designationFormatter, sorter:function(modela, modelb){
+                            var r = designationFormatter(modela.get('designation')).toString().toLowerCase()
+                            var l = designationFormatter(modelb.get('designation')).toString().toLowerCase()
+                            if (l === void 0) return -1;
+                            if (r === void 0) return 1;
+                            if(this.order === 'asc'){
+                                return  l < r ? 1 : l > r ? -1 : 0;
+                            }else{
+                                return  l < r ? -1 : l > r ? 1 : 0;
+                            }
+
                         }},
-                        {id: 'department', name: 'Department', formatter: function(value){
-                            var names = _.map(value.split(','), function(itemId){
-                                return departments.collection.get(itemId).get('name');
-                            })
-                            return names.join(', ');
+                        {id: 'department', name: 'Department', sortable:true, formatter: departmentFormatter, sorter:function(modela, modelb){
+                            var r = departmentFormatter(modela.get('department')).toString().toLowerCase()
+                            var l = departmentFormatter(modelb.get('department')).toString().toLowerCase()
+                            if (l === void 0) return -1;
+                            if (r === void 0) return 1;
+                            if(this.order === 'asc'){
+                                return  l < r ? 1 : l > r ? -1 : 0;
+                            }else{
+                                return  l < r ? -1 : l > r ? 1 : 0;
+                            }
+
                         }},
                         {id: 'remove', name: '',  renderHTML:true, formatter: function () {
                             return '<a href="#remove" data-id="'+this.id+'" class="remove">x</a>';

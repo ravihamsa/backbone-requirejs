@@ -40,7 +40,7 @@ require.config({
 })
 
 
-require(['models/app', 'helpers/handlebars'], function(app){
+require(['models/app', 'helpers/handlebars', 'helpers/behavior'], function(app){
     var Router = Backbone.Router.extend({
         routes: {
             ':pageId': 'renderPage',
