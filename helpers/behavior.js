@@ -142,13 +142,9 @@ var Behaviors = {
         }
     }),
     TableFilterNPagination: Marionette.Behavior.extend({
-
         modelEvents:{
-            'change:perPage': 'onSetCollection',
-            'change:curPage': 'onSetCollection'
-        },
-        ui:{
-          'paginationEl':'.pagination-container'
+            'change:perPage': 'perPageChangeHandler',
+            'change:curPage': 'triggerSetCollection'
         },
         filterFunction: function(){
             return true;
@@ -162,46 +158,59 @@ var Behaviors = {
             var pageCount = Math.ceil(filteredCount / options.perPage)
             var start =  (options.curPage - 1) * options.perPage;
             var end = Math.min(filteredCount, start + options.perPage);
-           
-            this.view.model.set({
+
+            viewModel.set({
                 totalCount:rowCollection.length,
                 filteredCount:filteredCount,
                 pageCount:pageCount,
                 start:start,
                 end:end,
-                nextEnabled:end < filteredCount,
-                prevEnabled:start > 0
+                nextEnabled:options.curPage !== pageCount,
+                prevEnabled:options.curPage > 1
             });
 
-            if(options.paginated){
 
+            if(options.paginated){
                 toReturn = toReturn.splice(start, options.perPage);
             }
-
             return toReturn;
         },
         getFiltered: function(){
             var rowCollection = this.view.getOption('rowCollection');
             return rowCollection.filter(this.filterFunction);
         },
-        setFilterFunction: function(fn){
+        onSetFilter: function(fn){
             this.filterFunction=fn;
-            this.view.triggerMethod('set:collection');
+            this.view.model.set('curPage', 1);
+            this.triggerSetCollection();
         },
-        removeFilterFunction: function(){
+        onClearFilter: function(){
             delete this.filterFunction;
-            this.view.triggerMethod('set:collection');
+            this.view.model.set('curPage', 1);
+            this.triggerSetCollection();
         },
         onBeforeRender: function(){
-            this.view.triggerMethod('set:collection');
+            this.triggerSetCollection();
         },
         onResetCollection: function(){
             this.view.collection.reset(this.getPaginated());
-            this.view.renderPagination();
         },
         onSetCollection: function(){
             this.view.collection.set(this.getPaginated());
-            this.view.renderPagination();
+        },
+        triggerSetCollection: function(){
+            this.getPaginated();
+            this.view.triggerMethod('set:collection');
+        },
+        perPageChangeHandler: function(){
+            var viewModel = this.view.model;
+            var curPage = viewModel.get('curPage');
+            if(curPage!== 1){
+                viewModel.set('curPage', 1);
+            }else{
+                this.triggerSetCollection();
+            }
+
         }
     })
 };

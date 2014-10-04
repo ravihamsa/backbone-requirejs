@@ -2,7 +2,9 @@ define(['./bareModel'], function(BareModel){
     var pageModel = new BareModel();
 
 
-    var app = {
+    var app = new Backbone.Marionette.Application();
+
+    _.extend(app, {
         setPageId: function(pageId){
             pageModel.set('pageId', pageId);
         },
@@ -21,8 +23,17 @@ define(['./bareModel'], function(BareModel){
         compileTemplate: function(str){
             return Handlebars.compile(str);
         }
-    }
+    })
 
+    app.addRegions({
+        pageRoot:'.page-container'
+    })
+
+    app.on("start", function(options){
+        if (Backbone.history){
+            Backbone.history.start();
+        }
+    });
 
     return app;
 })

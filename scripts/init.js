@@ -63,7 +63,11 @@ require(['models/app', 'helpers/handlebars', 'helpers/behavior'], function(app){
 
                 });
 
-                currentPage.render().$el.appendTo(pageRootEl);
+
+                var pageRoot = app.getRegion('pageRoot');
+                //currentPage.render().$el.appendTo(pageRootEl);
+                pageRoot.reset();
+                pageRoot.show(currentPage);
             })
 
         },
@@ -74,9 +78,7 @@ require(['models/app', 'helpers/handlebars', 'helpers/behavior'], function(app){
 
     app.router = new Router();
 
-    Backbone.history.start({
-        root: this.root
-    });
+    app.start();
 
 
 });

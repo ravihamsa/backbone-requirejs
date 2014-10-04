@@ -4,11 +4,9 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/departments'
 
     var CreateUserFormView = Form.View.extend({
         onFormSubmit: function(valueObject){
-
             valueObject.firstName = valueObject.name.firstName;
             valueObject.lastName = valueObject.name.lastName;
             delete valueObject.name;
-            console.log(valueObject);
             var def = user.userCollection.create(valueObject);
             def.done(function(){
                 app.router.navigate('#page2', {trigger:true});

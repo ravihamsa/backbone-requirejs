@@ -1,3 +1,4 @@
+{{#if pageCount}}
 <div class="table-pagination">
     Page {{curPage}} of {{pageCount}}
 
@@ -14,5 +15,5 @@
     {{#if nextEnabled}}
     <a href="#nextPage" class="js-action">next</a>
     {{/if}}
-
 </div>
+{{/if}}
