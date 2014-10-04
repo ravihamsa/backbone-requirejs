@@ -110,7 +110,7 @@ var Behaviors = {
         onSortColumn: function (e) {
             var view = this.view;
             var target = $(e.currentTarget);
-            var collection = view.collection;
+            var collection = view.getOption('rowCollection');
             var sortKey = collection.sortKey = target.data('key');
             var columnsCollection = view.getOption('columns');
             var column = columnsCollection.get(sortKey);
@@ -118,11 +118,12 @@ var Behaviors = {
             var sorter = column.get('sorter') || 'text';
             var comparator = this.sorterIndex[sorter];
             if(_.isFunction(sorter)){
-                view.collection.comparator = sorter
+                collection.comparator = sorter
             }else{
-                view.collection.comparator = comparator;
+                collection.comparator = comparator;
             }
-            view.collection.sort();
+            collection.sort();
+            this.view.triggerMethod('reset:collection');
         }
     }),
     TableRowRemover: Marionette.Behavior.extend({
@@ -138,6 +139,69 @@ var Behaviors = {
             var modelId = target.data('id');
             var model = this.view.collection.get(modelId);
             model.destroy();
+        }
+    }),
+    TableFilterNPagination: Marionette.Behavior.extend({
+
+        modelEvents:{
+            'change:perPage': 'onSetCollection',
+            'change:curPage': 'onSetCollection'
+        },
+        ui:{
+          'paginationEl':'.pagination-container'
+        },
+        filterFunction: function(){
+            return true;
+        },
+        getPaginated: function(){
+            var viewModel = this.view.model;
+            var rowCollection = this.view.getOption('rowCollection');
+            var options = viewModel.toJSON();
+            var toReturn = this.getFiltered();
+            var filteredCount = toReturn.length;
+            var pageCount = Math.ceil(filteredCount / options.perPage)
+            var start =  (options.curPage - 1) * options.perPage;
+            var end = Math.min(filteredCount, start + options.perPage);
+           
+            this.view.model.set({
+                totalCount:rowCollection.length,
+                filteredCount:filteredCount,
+                pageCount:pageCount,
+                start:start,
+                end:end,
+                nextEnabled:end < filteredCount,
+                prevEnabled:start > 0
+            });
+
+            if(options.paginated){
+
+                toReturn = toReturn.splice(start, options.perPage);
+            }
+
+            return toReturn;
+        },
+        getFiltered: function(){
+            var rowCollection = this.view.getOption('rowCollection');
+            return rowCollection.filter(this.filterFunction);
+        },
+        setFilterFunction: function(fn){
+            this.filterFunction=fn;
+            this.view.triggerMethod('set:collection');
+        },
+        removeFilterFunction: function(){
+            delete this.filterFunction;
+            this.view.triggerMethod('set:collection');
+        },
+        onBeforeRender: function(){
+            this.view.triggerMethod('set:collection');
+        },
+        onResetCollection: function(){
+            this.view.collection.reset(this.getPaginated());
+            this.view.renderPagination();
+        },
+        onSetCollection: function(){
+            this.view.collection.set(this.getPaginated());
+            this.view.renderPagination();
         }
     })
 };

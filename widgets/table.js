@@ -1,7 +1,7 @@
-define(['text!./table.html'], function (tableTemplate) {
+define(['text!./table.html','text!./pagination.html'], function (tableTemplate, paginationTemplate) {
 
     var tableTemplateFunction = Handlebars.compile(tableTemplate);
-
+    var paginationTemplateFunction = Handlebars.compile(paginationTemplate);
 
     var ColumnModel = Backbone.Model.extend({
         defaults: {
@@ -50,7 +50,65 @@ define(['text!./table.html'], function (tableTemplate) {
         childView: ColumnItemView
     });
 
+
+    var TableModel = Backbone.Model.extend({
+        defaults:{
+            perPage:10,
+            curPage:1,
+            paginated:false,
+            perPageOptions:[10,20,50,100]
+        }
+    })
+
+
+    var PaginationView=Backbone.Marionette.ItemView.extend({
+        behaviors:{
+            AnchorActions:{}
+        },
+        template:paginationTemplateFunction,
+        events:{
+            'change select':'selectChangeHandler'
+        },
+        serializeData: function(){
+            var json = this.model.toJSON();
+            json.perPageOptions = _.map(json.perPageOptions, function(item){
+                return {
+                    id:item,
+                    name:item,
+                    selected:item === json.perPage
+                }
+            })
+
+            json.start +=1;
+
+            return json;
+        },
+        selectChangeHandler:function(){
+            this.model.set('perPage', +(this.$('select').val()));
+        },
+        onActionNextPage: function(){
+            var json = this.model.toJSON();
+            if(json.nextEnabled){
+                this.model.set('curPage', json.curPage + 1);
+            }
+        },
+        onActionPrevPage: function(){
+            var json = this.model.toJSON();
+            if(json.prevEnabled){
+                this.model.set('curPage', json.curPage - 1);
+            }
+        }
+    })
+
     var TableView = Backbone.Marionette.CompositeView.extend({
+        constructor: function(){
+            this.collection = new Backbone.Collection();
+            this.filters = new Backbone.Collection();
+            Backbone.Marionette.CompositeView.apply(this, arguments);
+        },
+        ui:{
+           paginationEl:'.pagination-container'
+        },
         template: tableTemplateFunction,
         childView: RowView,
         childViewOptions: function (rowModel, index) {
@@ -76,12 +134,35 @@ define(['text!./table.html'], function (tableTemplate) {
             });
             headerView.render();
             headerView.$el.appendTo(this.$('thead'));
+            this.renderPagination();
+        },
+        renderPagination: function(){
+            if(!this.model.get('paginated') || this.$('.pagination-container').length === 0){
+                return;
+            }
+            var paginationView = this.paginationView;
+            if(!paginationView){
+                var paginationView = new PaginationView({
+                    model:this.model,
+                    collection:this.getOption('rowCollection')
+                })
+                paginationView.render();
+                paginationView.$el.appendTo(this.$('.pagination-container'));
+
+                this.paginationView = paginationView;
+            }else{
+                paginationView.render();
+            }
+
+
         }
+
     })
 
 
     return {
         View: TableView,
+        Model:TableModel,
         ColumnCollection:ColumnCollection
     };
 

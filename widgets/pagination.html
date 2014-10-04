@@ -1,0 +1,18 @@
+<div class="table-pagination">
+    Page {{curPage}} of {{pageCount}}
+
+    Per Page
+    <select>
+        {{#each perPageOptions}}
+            <option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+    </select>
+
+    {{#if prevEnabled}}
+    <a href="#prevPage" class="js-action">prev</a>
+    {{/if}}
+    {{#if nextEnabled}}
+    <a href="#nextPage" class="js-action">next</a>
+    {{/if}}
+
+</div>

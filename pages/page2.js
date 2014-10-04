@@ -5,7 +5,10 @@ define(['pages/defaultPage', 'widgets/table', 'models/user','models/departments'
     var UserTable = Table.View.extend({
         behaviors:{
             TableSorter:{},
-            TableRowRemover:{}
+            TableRowRemover:{},
+            TableFilterNPagination:{
+                paginated:true
+            }
         }
     })
 
@@ -24,16 +27,15 @@ define(['pages/defaultPage', 'widgets/table', 'models/user','models/departments'
     }
 
     var View = DefaultPage.View.extend({
-        initialize: function () {
 
-        },
         template: '<a href="#createUser">Create User</a> <div class="user-table"> </div>',
         afterRender: function () {
             var _this = this;
             $.when( user.userDef, departments.def, designations.def).then(function () {
                 var tableWidget = new UserTable({
 
-                    collection: user.userCollection,
+                    rowCollection: user.userCollection,
+                    model:new Table.Model({paginated:true}),
                     columns: new Table.ColumnCollection([
                         {id: 'firstName',
                             name: 'Full Name',
@@ -75,6 +77,9 @@ define(['pages/defaultPage', 'widgets/table', 'models/user','models/departments'
                         }}
                     ])
                 });
+
+                //tableWidget.on('all', function(){console.log(arguments)});
+
                 tableWidget.render();
                 tableWidget.$el.appendTo(_this.$('.user-table'));
             });
