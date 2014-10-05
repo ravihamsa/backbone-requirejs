@@ -9,11 +9,7 @@ define(['text!./tableFilter.html'],function(filterTemplate){
                 event.preventDefault();
             }
             var searchVal = $.trim(this.$('input').val());
-            if(searchVal.length < 3){
-                this.triggerMethod('clear:filter', '');
-            }else{
-                this.triggerMethod('set:filter', searchVal);
-            }
+            this.triggerMethod('set:filter', searchVal);
         },
         template:Handlebars.compile(filterTemplate),
         onSetFilter: function(searchString){
