@@ -28,7 +28,20 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/departments'
                 var elements = [{
                     id:'name',
                     label:'Name',
-                    type:'name'
+                    type:'name',
+                    validationRules:[{
+                        expr:'function',
+                        func:function(value, rule){
+                            return $.trim(value.firstName) !== '';
+                        },
+                        message:'first name cannot be empty'
+                    },{
+                        expr:'function',
+                        func:function(value, rule){
+                            return $.trim(value.lastName) !== '';
+                        },
+                        message:'last name cannot be empty'
+                    }]
                 }, {
                     id:'designation',
                     label:'Designation',
