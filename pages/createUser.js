@@ -17,8 +17,11 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/departments'
 
 
     var View = DefaultPage.View.extend({
-        template: 'Page 4 <div class="user-form"> </div>',
-        afterRender: function(){
+        template: Handlebars.compile('Page 4 <div class="user-form"> </div>'),
+        regions:{
+            form:'.user-form'
+        },
+        onShow: function(){
             var _this = this;
             $.when( user.userDef, departments.def, designations.def).then(function(){
 
@@ -54,8 +57,7 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/departments'
                 var formView = new CreateUserFormView({
                     collection:elementCollection
                 });
-                formView.render();
-                formView.$el.appendTo(_this.$('.user-form'));
+                _this.form.show(formView);
             })
         }
     });
