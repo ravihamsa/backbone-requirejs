@@ -46,7 +46,13 @@ define(['pages/defaultPage', 'widgets/form', 'models/user', 'models/departments'
                     id:'designation',
                     label:'Designation',
                     type:'selectList',
-                    options:designations.collection.toJSON()
+                    options:designations.collection.toJSON(),
+                    validationRules:[
+                        {
+                            expr:'req',
+                            message:'Select at least one designation'
+                        }
+                    ]
                 }, {
                     id:'gender',
                     label:'Gender',

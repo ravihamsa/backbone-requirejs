@@ -83,7 +83,6 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
         },
         updateValue: function(){
             var value = []
-            console.log('updateValue', '-------');
             this.collection.each(function(model, index){
                 var selectedOption = model.get('selectedOption');
                 if(selectedOption){
@@ -104,7 +103,7 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
             });
             this.listView = listView;
             listView.render();
-            listView.$el.appendTo(this.$('.element'));
+            listView.$el.appendTo(this.$('.list-container'));
         },
         updateValue: function(){
             this.listView.updateValue();

@@ -35,6 +35,7 @@ define(['models/app'], function(app) {
 
     var validationRuleMethods = {
         'req': function(rule, value) {
+            console.log(arguments);
             return !_.isEmpty(value);
         },
         'digits': function(rule, value) {
