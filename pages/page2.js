@@ -60,7 +60,7 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
                             var l = designationFormatter(modelb.get('designation')).toString().toLowerCase()
                             if (l === void 0) return -1;
                             if (r === void 0) return 1;
-                            if (this.order === 'asc') {
+                            if (this.sortOrder === 'asc') {
                                 return  l < r ? 1 : l > r ? -1 : 0;
                             } else {
                                 return  l < r ? -1 : l > r ? 1 : 0;
@@ -72,7 +72,7 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
                             var l = departmentFormatter(modelb.get('department')).toString().toLowerCase()
                             if (l === void 0) return -1;
                             if (r === void 0) return 1;
-                            if (this.order === 'asc') {
+                            if (this.sortOrder === 'asc') {
                                 return  l < r ? 1 : l > r ? -1 : 0;
                             } else {
                                 return  l < r ? -1 : l > r ? 1 : 0;
@@ -87,6 +87,7 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
                             return '<a href="#editUser/userId=' + this.id + '">edit</a>';
                         }}
                     ])
+
                 });
 
                 tableWidget.on('all', function(){console.log(arguments)});

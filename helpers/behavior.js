@@ -88,7 +88,7 @@ var Behaviors = {
                 var l = modelb.get(this.sortKey).toLowerCase();
                 if (l === void 0) return -1;
                 if (r === void 0) return 1;
-                if(this.order === 'asc'){
+                if(this.sortOrder === 'asc'){
                     return  l < r ? 1 : l > r ? -1 : 0;
                 }else{
                     return  l < r ? -1 : l > r ? 1 : 0;
@@ -100,7 +100,7 @@ var Behaviors = {
                 var l = modelb.get(this.sortKey).toLowerCase();
                 if (l === void 0) return -1;
                 if (r === void 0) return 1;
-                if(this.order === 'asc'){
+                if(this.sortOrder === 'asc'){
                     return  l < r ? 1 : l > r ? -1 : 0;
                 }else{
                     return  l < r ? -1 : l > r ? 1 : 0;
@@ -109,12 +109,29 @@ var Behaviors = {
         },
         onSortColumn: function (e) {
             var view = this.view;
-            var target = $(e.currentTarget);
             var collection = view.getOption('rowCollection');
-            var sortKey = collection.sortKey = target.data('key');
+            var target = $(e.currentTarget);
+            var sortKey =  target.data('key');
+            var sortOrder
+            if(sortKey === collection.sortKey){
+                sortOrder = collection.sortOrder === 'asc' ? 'dsc' : 'asc';
+            }else{
+                sortOrder = 'asc';
+            }
+
+            //this.sortCollection(sortKey, sortOrder);
+            this.view.triggerMethod('sort:collection', sortKey, sortOrder);
+        },
+        onSortCollection: function(sortKey, sortOrder){
+            console.log(arguments, 'sortCollection');
+            var view = this.view;
             var columnsCollection = view.getOption('columns');
             var column = columnsCollection.get(sortKey);
-            collection.order = collection.order === 'asc' ? 'dsc' : 'asc';
+            var collection = view.getOption('rowCollection');
+
+            collection.sortKey = sortKey;
+            collection.sortOrder = sortOrder;
+
             var sorter = column.get('sorter') || 'text';
             var comparator = this.sorterIndex[sorter];
             if(_.isFunction(sorter)){
