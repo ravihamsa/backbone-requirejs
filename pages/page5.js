@@ -12,14 +12,14 @@ define(['pages/defaultPage', 'pages/page5/user', 'models/user', 'models/departme
             var _this = this;
             $.when(users.userDef, departments.def, designations.def).then(function () {
                 var managerModel = users.userCollection.get(app.getPageAttribute('userId'));
-                _this.manager.show(new User.View({
+                _this.manager.show(new User.ManagerView({
                     model: managerModel
                 }));
 
                 var reporteesDef = reportees.getReporteesFor(managerModel.id);
 
                 reporteesDef.done(function(resp){
-                     _this.reportees.show(new User.CollectionView({
+                     _this.reportees.show(new User.ReporteeCollectionView({
                          collection:new Backbone.Collection(resp)
                      }))
                 })

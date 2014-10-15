@@ -1,19 +1,25 @@
-define(['text!./userTemplate.html'],function(userTemplate){
+define(['text!./managerTemplate.html', 'text!./reporteeTemplate.html'],function(managerTemplate, reporteeTemplate){
 
 
-    var UserView = Backbone.Marionette.ItemView.extend({
-        template: Handlebars.compile(userTemplate)
+    var ManagerView = Backbone.Marionette.ItemView.extend({
+        template: Handlebars.compile(managerTemplate)
     });
 
-    var UserCollectionView = Backbone.Marionette.CollectionView.extend({
-        childView:UserView
+
+    var ReporteeView = Backbone.Marionette.ItemView.extend({
+        template: Handlebars.compile(reporteeTemplate)
+    })
+
+
+    var ReporteeCollectionView = Backbone.Marionette.CollectionView.extend({
+        childView:ReporteeView
     });
 
 
 
 
     return {
-        View:UserView,
-        CollectionView:UserCollectionView
+        ManagerView:ManagerView,
+        ReporteeCollectionView:ReporteeCollectionView
     }
 });
