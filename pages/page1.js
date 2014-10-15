@@ -3,7 +3,7 @@ define(['pages/defaultPage', 'text!./page1Template.html'], function(DefaultPage,
     "use strict";
 
     var View = DefaultPage.View.extend({
-        template: page1TemplateString
+        template: Handlebars.compile(page1TemplateString)
     });
 
     return {

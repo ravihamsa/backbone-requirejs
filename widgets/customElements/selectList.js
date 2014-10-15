@@ -5,6 +5,11 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
     var idCounter = 1;
 
     var SelectListView = Backbone.Marionette.CollectionView.extend({
+        initialize: function(){
+            this.collection.on('all', function(){
+                console.log(arguments)
+            })
+        },
         childViewEventPrefix:'option',
         childView:ItemSelect,
         addItem: function(){
@@ -15,7 +20,7 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
                 name:'name_'+idCounter,
                 options:this.model.get('options'),
                 showRemove:this.collection.length !== 0,
-                showAdd:this.collection.length < valueOptions.length
+                showAdd:true
             };
             var objModel = this.collection.add(obj);
             this.updateRemoveStatus();
@@ -73,10 +78,11 @@ define(['models/app','text!./selectList.html', './itemSelect', '../element'],fun
 
             var _this = this;
             var valueOptions = _this.model.get('options');
+            var last = _this.collection.last();
             this.collection.each(function(model, index){
                 model.set({
                     showRemove:index !== 0,
-                    showAdd:_this.collection.length < valueOptions.length
+                    showAdd:model.id === last.id
                 })
             });
             this.updateValue();

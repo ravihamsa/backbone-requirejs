@@ -7,6 +7,9 @@ define(['models/app','text!./itemSelect.html'],function(app, elementTemplate){
             'click .add':'add:item',
             'change select':'selected'
         },
+        modelEvents:{
+            'change:showAdd':'render'
+        },
         template:app.compileTemplate(elementTemplate),
         getValue: function(){
             return this.$('select').val();
