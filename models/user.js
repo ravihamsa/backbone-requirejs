@@ -10,7 +10,7 @@ define(function(){
             _.each(resp.result, function(item){
                 item.id = item._id;
             })
-
+            console.log(resp.result);
             return resp.result;
         }
     })
