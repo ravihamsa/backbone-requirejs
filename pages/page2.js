@@ -23,14 +23,14 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
 
     var designationFormatter = function (value) {
         var names = _.map(value, function (itemId) {
-            return designations.collection.get(itemId).get('name');
+            return designations.collection.get(itemId._id).get('name');
         })
         return names.join(', ');
     }
 
     var departmentFormatter = function (value) {
         var names = _.map(value, function (itemId) {
-            return departments.collection.get(itemId).get('name');
+            return departments.collection.get(itemId._id).get('name');
         })
         return names.join(', ');
     }
