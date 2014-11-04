@@ -232,6 +232,18 @@ var Behaviors = {
     })
 };
 
+var TableServerSorter = Behaviors.TableSorter.extend({
+    onSortCollection: function(sortKey, sortOrder){
+        var view = this.view;
+        var collection = view.getOption('rowCollection');
+        collection.sortKey = sortKey;
+        collection.sortOrder = sortOrder;
+        this.view.triggerMethod('fetch:collection');
+    }
+})
+
+Behaviors.TableServerSorter = TableServerSorter
+
 
 Marionette.Behaviors.behaviorsLookup = function () {
     return Behaviors;

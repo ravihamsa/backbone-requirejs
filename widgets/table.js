@@ -1,4 +1,4 @@
-define(['text!./table.html','text!./pagination.html'], function (tableTemplate, paginationTemplate) {
+define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate, paginationTemplate) {
 
     var tableTemplateFunction = Handlebars.compile(tableTemplate);
     var paginationTemplateFunction = Handlebars.compile(paginationTemplate);
@@ -10,17 +10,18 @@ define(['text!./table.html','text!./pagination.html'], function (tableTemplate, 
     })
 
     var ColumnCollection = Backbone.Collection.extend({
-        model:ColumnModel
+        model: ColumnModel
     })
+
 
     var CellView = Backbone.Marionette.ItemView.extend({
         tagName: 'td',
         template: Handlebars.compile(' {{#if renderHTML}} {{{value}}} {{else}} {{value}} {{/if}}'),
         className: function () {
             var classes = [this.model.id, 'cell'];
-            if(this.model.get('sorted')){
+            if (this.model.get('sorted')) {
                 classes.push('sorted');
-                classes.push('order-'+this.model.get('sortOrder'));
+                classes.push('order-' + this.model.get('sortOrder'));
             }
             return classes.join(' ');
         }
@@ -43,11 +44,11 @@ define(['text!./table.html','text!./pagination.html'], function (tableTemplate, 
         className: function () {
             var classes = [this.model.id, 'headerCell'];
             var attributes = this.model.toJSON();
-            if(attributes.sortable){
+            if (attributes.sortable) {
                 classes.push('sortable');
-                if(attributes.sorted){
+                if (attributes.sorted) {
                     classes.push('sorted');
-                    classes.push('order-'+attributes.sortOrder);
+                    classes.push('order-' + attributes.sortOrder);
                 }
             }
             return classes.join(' ');
@@ -66,64 +67,60 @@ define(['text!./table.html','text!./pagination.html'], function (tableTemplate, 
 
 
     var TableModel = Backbone.Model.extend({
-        defaults:{
-            perPage:10,
-            curPage:1,
-            paginated:false,
-            perPageOptions:[10,20,50,100]
+        defaults: {
+            perPage: 10,
+            curPage: 1,
+            paginated: false,
+            perPageOptions: [10, 20, 50, 100]
         }
     })
 
 
-    var PaginationView=Backbone.Marionette.ItemView.extend({
-        behaviors:{
-            AnchorActions:{}
+    var PaginationView = Backbone.Marionette.ItemView.extend({
+        behaviors: {
+            AnchorActions: {}
         },
-        template:paginationTemplateFunction,
-        events:{
-            'change select':'selectChangeHandler'
+        template: paginationTemplateFunction,
+        events: {
+            'change select': 'selectChangeHandler'
         },
-        serializeData: function(){
+        serializeData: function () {
             var json = this.model.toJSON();
-            json.perPageOptions = _.map(json.perPageOptions, function(item){
+            json.perPageOptions = _.map(json.perPageOptions, function (item) {
                 return {
-                    id:item,
-                    name:item,
-                    selected:item === json.perPage
+                    id: item,
+                    name: item,
+                    selected: item === json.perPage
                 }
             })
 
-            json.start +=1;
+            json.start += 1;
 
             return json;
         },
-        selectChangeHandler:function(){
+        selectChangeHandler: function () {
             this.model.set('perPage', +(this.$('select').val()));
         },
-        onActionNextPage: function(){
+        onActionNextPage: function () {
             var json = this.model.toJSON();
-            if(json.nextEnabled){
+            if (json.nextEnabled) {
                 this.model.set('curPage', json.curPage + 1);
             }
         },
-        onActionPrevPage: function(){
+        onActionPrevPage: function () {
             var json = this.model.toJSON();
-            if(json.prevEnabled){
+            if (json.prevEnabled) {
                 this.model.set('curPage', json.curPage - 1);
             }
         }
     })
 
 
-
-
-
-
     var TableView = Backbone.Marionette.CompositeView.extend({
-        tagName:'table',
-        template:Handlebars.compile('<thead> </thead> <tbody></tbody>'),
+        tagName: 'table',
+        template: Handlebars.compile('<thead> </thead> <tbody></tbody>'),
         childView: RowView,
-        childViewContainer:'tbody',
+        childViewContainer: 'tbody',
         childViewOptions: function (rowModel, index) {
             var rowCollection = this.getOption('rowCollection');
             var columnsCollection = this.getOption('columns');
@@ -133,9 +130,9 @@ define(['text!./table.html','text!./pagination.html'], function (tableTemplate, 
                     id: columnModel.id,
                     value: formatter.call(rowModel, rowModel.get(columnModel.id)),
                     renderHTML: columnModel.get('renderHTML'),
-                    sorted:rowCollection.sortKey === columnModel.id
+                    sorted: rowCollection.sortKey === columnModel.id
                 }
-                if(obj.sorted){
+                if (obj.sorted) {
                     obj.sortOrder = rowCollection.sortOrder;
                 }
                 return obj;
@@ -146,32 +143,32 @@ define(['text!./table.html','text!./pagination.html'], function (tableTemplate, 
                 rowModel: rowModel
             };
         },
-        onRender: function(){
+        onRender: function () {
             this.renderHeader();
         },
-        renderHeader: function(){
-            if(!this.headerView){
-                var columnCollection  = this.getColumnCollection();
+        renderHeader: function () {
+            if (!this.headerView) {
+                var columnCollection = this.getColumnCollection();
                 var headerView = new ColumnCollectionView({
                     collection: columnCollection
                 });
                 this.headerView = headerView;
                 this.$('thead').append(headerView.render().el);
-            }else{
-                var columnCollection  = this.getColumnCollection();
+            } else {
+                var columnCollection = this.getColumnCollection();
                 this.headerView.render();
             }
         },
-        getColumnCollection: function(){
+        getColumnCollection: function () {
             var columnCollection = this.getOption('columns');
             var rowCollection = this.getOption('rowCollection');
-            columnCollection.each(function(model){
-                if(model.id === rowCollection.sortKey){
+            columnCollection.each(function (model) {
+                if (model.id === rowCollection.sortKey) {
                     model.set({
-                        sorted:true,
-                        sortOrder:rowCollection.sortOrder
+                        sorted: true,
+                        sortOrder: rowCollection.sortOrder
                     });
-                }else{
+                } else {
                     model.set('sorted', false);
                 }
             });
@@ -182,23 +179,23 @@ define(['text!./table.html','text!./pagination.html'], function (tableTemplate, 
     })
 
     var WidgetView = Backbone.Marionette.LayoutView.extend({
-        constructor: function(){
+        constructor: function () {
             this.collection = new Backbone.Collection();
             this.filters = new Backbone.Collection();
             Backbone.Marionette.LayoutView.apply(this, arguments);
         },
         template: tableTemplateFunction,
-        regions:{
-            table:'.table-body',
-            header:'.table-header',
-            footer:'.table-footer'
+        regions: {
+            table: '.table-body',
+            header: '.table-header',
+            footer: '.table-footer'
         },
-        onShow: function(){
+        onShow: function () {
             this.showHeader();
             this.showBody();
             this.showFooter();
         },
-        showBody: function(){
+        showBody: function () {
             var sortKey = this.getOption('sortKey') || this.getOption('columns').at(0).id;
             var sortOrder = this.getOption('sortOrder') || 'asc';
             var rowCollection = this.getOption('rowCollection');
@@ -206,43 +203,91 @@ define(['text!./table.html','text!./pagination.html'], function (tableTemplate, 
             rowCollection.sortOrder = sortOrder;
             this.triggerMethod('sort:collection', sortKey, sortOrder);
             var tableView = new TableView({
-                rowCollection:this.getOption('rowCollection'),
-                collection:this.collection,
-                model:this.model,
-                columns:this.getOption('columns')
+                rowCollection: this.getOption('rowCollection'),
+                collection: this.collection,
+                model: this.model,
+                columns: this.getOption('columns')
             })
             this.table.show(tableView);
         },
-        showFooter: function(){
+        showFooter: function () {
             var paginationView = new PaginationView({
-                model:this.model,
-                collection:this.getOption('rowCollection')
+                model: this.model,
+                collection: this.getOption('rowCollection')
             })
             this.footer.show(paginationView);
         },
-        onResetCollection: function(){
-            if(this.footer.hasView()){
+        onResetCollection: function () {
+            if (this.footer.hasView()) {
                 this.footer.currentView.render();
                 this.table.currentView.renderHeader();
             }
         },
-        onSetCollection: function(){
-           if(this.footer.hasView()){
-               this.footer.currentView.render();
-               this.table.currentView.renderHeader();
-           }
+        onSetCollection: function () {
+            if (this.footer.hasView()) {
+                this.footer.currentView.render();
+                this.table.currentView.renderHeader();
+            }
 
         },
-        showHeader: function(){
+        showHeader: function () {
             //do nothing
         }
     })
 
 
+    var ServerSideTableView = WidgetView.extend({
+        constructor: function(){
+            var _this = this;
+            WidgetView.apply(this, arguments);
+            var rowCollection = this.getOption('rowCollection');
+
+            rowCollection.on('sync', function (coll) {
+                _this.table.currentView.renderHeader();
+                _this.collection.reset(coll.models);
+            })
+           _this.triggerMethod('fetch:collection');
+
+        },
+        showBody: function () {
+            var sortKey = this.getOption('sortKey') || this.getOption('columns').at(0).id;
+            var sortOrder = this.getOption('sortOrder') || 'asc';
+            var rowCollection = this.getOption('rowCollection');
+            rowCollection.sortKey = sortKey;
+            rowCollection.sortOrder = sortOrder;
+            var tableView = new TableView({
+                rowCollection: rowCollection,
+                collection: this.collection,
+                model: this.model,
+                columns: this.getOption('columns')
+            })
+            this.table.show(tableView);
+        },
+        onFetchCollection: function(){
+            var _this = this;
+
+            var rowCollection = this.getOption('rowCollection');
+            var def = rowCollection.fetch();
+            _this.showLoading();
+            def.always(function(){
+                _this.hideLoading();
+            })
+        },
+        showLoading: function(){
+            this.$el.addClass('loading');
+        },
+        hideLoading: function(){
+            this.$el.removeClass('loading');
+        }
+
+    })
+
+
     return {
         View: WidgetView,
-        Model:TableModel,
-        ColumnCollection:ColumnCollection
+        ServerSideView: ServerSideTableView,
+        Model: TableModel,
+        ColumnCollection: ColumnCollection
     };
 
 });
