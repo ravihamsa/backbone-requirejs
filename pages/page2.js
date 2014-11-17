@@ -22,15 +22,15 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
     })
 
     var designationFormatter = function (value) {
-        var names = _.map(value.split(','), function (itemId) {
-            return designations.collection.get(itemId).get('name');
+        var names = _.map(value, function (item) {
+            return designations.collection.get(item._id).get('name');
         })
         return names.join(', ');
     }
 
     var departmentFormatter = function (value) {
-        var names = _.map(value.split(','), function (itemId) {
-            return departments.collection.get(itemId).get('name');
+        var names = _.map(value, function (item) {
+            return departments.collection.get(item._id).get('name');
         })
         return names.join(', ');
     }
@@ -48,16 +48,16 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
                     rowCollection: user.userCollection,
                     model: new Table.Model({paginated: true}),
                     columns: new Table.ColumnCollection([
-                        {id: 'firstName',
+                        {id: 'firstname',
                             name: 'Full Name',
                             sortable: true,
                             formatter: function () {
-                                return this.get('firstName') + ' ' + this.get('lastName');
+                                return this.get('firstname') + ' ' + this.get('firstname');
                             }
                         },
-                        {id: 'designation', name: 'Designation', sortable: true, formatter: designationFormatter, sorter: function (modela, modelb) {
-                            var r = designationFormatter(modela.get('designation')).toString().toLowerCase()
-                            var l = designationFormatter(modelb.get('designation')).toString().toLowerCase()
+                        {id: 'designations', name: 'Designation', sortable: true, formatter: designationFormatter, sorter: function (modela, modelb) {
+                            var r = designationFormatter(modela.get('designations')).toString().toLowerCase()
+                            var l = designationFormatter(modelb.get('designations')).toString().toLowerCase()
                             if (l === void 0) return -1;
                             if (r === void 0) return 1;
                             if (this.sortOrder === 'asc') {
@@ -67,9 +67,9 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
                             }
 
                         }},
-                        {id: 'department', name: 'Department', sortable: true, formatter: departmentFormatter, sorter: function (modela, modelb) {
-                            var r = departmentFormatter(modela.get('department')).toString().toLowerCase()
-                            var l = departmentFormatter(modelb.get('department')).toString().toLowerCase()
+                        {id: 'departments', name: 'Department', sortable: true, formatter: departmentFormatter, sorter: function (modela, modelb) {
+                            var r = departmentFormatter(modela.get('departments')).toString().toLowerCase()
+                            var l = departmentFormatter(modelb.get('departments')).toString().toLowerCase()
                             if (l === void 0) return -1;
                             if (r === void 0) return 1;
                             if (this.sortOrder === 'asc') {

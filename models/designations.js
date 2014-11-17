@@ -5,7 +5,7 @@ define(function(){
 
     var DesignationCollection = Backbone.Collection.extend({
         model: UserModel,
-        url: 'http://localhost/api/rest/designations/',
+        url: '/rest/designations/',
         parse: function (resp) {
             _.each(resp.result, function(item){
                 item.id = item._id;

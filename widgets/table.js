@@ -67,10 +67,10 @@ define(['text!./table.html','text!./pagination.html'], function (tableTemplate, 
 
     var TableModel = Backbone.Model.extend({
         defaults:{
-            perPage:10,
+            perPage:5,
             curPage:1,
             paginated:false,
-            perPageOptions:[10,20,50,100]
+            perPageOptions:[5,10,20,50,100]
         }
     })
 
