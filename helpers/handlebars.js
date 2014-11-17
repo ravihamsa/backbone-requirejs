@@ -1,4 +1,10 @@
 define(function(){
+
+    Handlebars.registerHelper('stringify', function (val1) {
+        return JSON.stringify(val1);
+    });
+
+
     Handlebars.registerHelper('ifEqual', function (val1, val2, obj) {
 
         if (val1 === val2) {
