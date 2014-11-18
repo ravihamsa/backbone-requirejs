@@ -62,16 +62,16 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
             var _this = this;
 
             var columnsCollection = new Table.ColumnCollection([
-                {id: 'firstName',
+                {id: 'firstname',
                     name: 'Full Name',
                     sortable: true,
                     formatter: function () {
-                        return this.get('firstName') + ' ' + this.get('lastName');
+                        return this.get('firstname') + ' ' + this.get('lastname');
                     }
                 },
-                {id: 'designation', name: 'Designation', sortable: true, formatter: designationFormatter, sorter: function (modela, modelb) {
-                    var r = designationFormatter(modela.get('designation')).toString().toLowerCase()
-                    var l = designationFormatter(modelb.get('designation')).toString().toLowerCase()
+                {id: 'designations', name: 'Designation', sortable: true, formatter: designationFormatter, sorter: function (modela, modelb) {
+                    var r = designationFormatter(modela.get('designations')).toString().toLowerCase()
+                    var l = designationFormatter(modelb.get('designations')).toString().toLowerCase()
                     if (l === void 0) return -1;
                     if (r === void 0) return 1;
                     if (this.sortOrder === 'asc') {
@@ -81,9 +81,9 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
                     }
 
                 }},
-                {id: 'department', name: 'Department', sortable: true, formatter: departmentFormatter, sorter: function (modela, modelb) {
-                    var r = departmentFormatter(modela.get('department')).toString().toLowerCase()
-                    var l = departmentFormatter(modelb.get('department')).toString().toLowerCase()
+                {id: 'departments', name: 'Department', sortable: true, formatter: departmentFormatter, sorter: function (modela, modelb) {
+                    var r = departmentFormatter(modela.get('departments')).toString().toLowerCase()
+                    var l = departmentFormatter(modelb.get('departments')).toString().toLowerCase()
                     if (l === void 0) return -1;
                     if (r === void 0) return 1;
                     if (this.sortOrder === 'asc') {
