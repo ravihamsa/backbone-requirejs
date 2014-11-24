@@ -53,7 +53,7 @@ var Behaviors = {
         },
         events: {
             'click @ui.toggleButton': 'toggleBody',
-            'forceHideBody':'hideBody'
+            'forceHideBody': 'hideBody'
         },
         toggleBody: function () {
             if (this._open) {
@@ -72,26 +72,26 @@ var Behaviors = {
             this._open = true
         },
         onShow: function () {
-           this.hideBody();
+            this.hideBody();
         }
     }),
     TableSorter: Marionette.Behavior.extend({
-        ui:{
-            'sortEl':'.sortable'
+        ui: {
+            'sortEl': '.sortable'
         },
-        events:{
-            'click @ui.sortEl':'onSortColumn'
+        events: {
+            'click @ui.sortEl': 'onSortColumn'
         },
-        sorterIndex:{
-            'text':  function (modela, modelb) {
+        sorterIndex: {
+            'text': function (modela, modelb) {
                 var r = modela.get(this.sortKey).toLowerCase();
                 var l = modelb.get(this.sortKey).toLowerCase();
                 if (l === void 0) return -1;
                 if (r === void 0) return 1;
-                if(this.sortOrder === 'asc'){
-                    return  l < r ? 1 : l > r ? -1 : 0;
-                }else{
-                    return  l < r ? -1 : l > r ? 1 : 0;
+                if (this.sortOrder === 'asc') {
+                    return l < r ? 1 : l > r ? -1 : 0;
+                } else {
+                    return l < r ? -1 : l > r ? 1 : 0;
                 }
 
             },
@@ -100,10 +100,10 @@ var Behaviors = {
                 var l = modelb.get(this.sortKey).toLowerCase();
                 if (l === void 0) return -1;
                 if (r === void 0) return 1;
-                if(this.sortOrder === 'asc'){
-                    return  l < r ? 1 : l > r ? -1 : 0;
-                }else{
-                    return  l < r ? -1 : l > r ? 1 : 0;
+                if (this.sortOrder === 'asc') {
+                    return l < r ? 1 : l > r ? -1 : 0;
+                } else {
+                    return l < r ? -1 : l > r ? 1 : 0;
                 }
             }
         },
@@ -111,18 +111,18 @@ var Behaviors = {
             var view = this.view;
             var collection = view.getOption('rowCollection');
             var target = $(e.currentTarget);
-            var sortKey =  target.data('key');
+            var sortKey = target.data('key');
             var sortOrder
-            if(sortKey === collection.sortKey){
+            if (sortKey === collection.sortKey) {
                 sortOrder = collection.sortOrder === 'asc' ? 'dsc' : 'asc';
-            }else{
+            } else {
                 sortOrder = 'asc';
             }
 
             //this.sortCollection(sortKey, sortOrder);
             this.view.triggerMethod('sort:collection', sortKey, sortOrder);
         },
-        onSortCollection: function(sortKey, sortOrder){
+        onSortCollection: function (sortKey, sortOrder) {
             console.log(arguments, 'sortCollection');
             var view = this.view;
             var columnsCollection = view.getOption('columns');
@@ -134,9 +134,9 @@ var Behaviors = {
 
             var sorter = column.get('sorter') || 'text';
             var comparator = this.sorterIndex[sorter];
-            if(_.isFunction(sorter)){
+            if (_.isFunction(sorter)) {
                 collection.comparator = sorter
-            }else{
+            } else {
                 collection.comparator = comparator;
             }
             collection.sort();
@@ -144,13 +144,13 @@ var Behaviors = {
         }
     }),
     TableRowRemover: Marionette.Behavior.extend({
-        ui:{
-            'removeEl':'a.remove'
+        ui: {
+            'removeEl': 'a.remove'
         },
-        events:{
-            'click @ui.removeEl':'removeRowHandler'
+        events: {
+            'click @ui.removeEl': 'removeRowHandler'
         },
-        removeRowHandler: function(e){
+        removeRowHandler: function (e) {
             e.preventDefault();
             var target = $(e.target);
             var modelId = target.data('id');
@@ -159,90 +159,147 @@ var Behaviors = {
         }
     }),
     TableFilterNPagination: Marionette.Behavior.extend({
-        modelEvents:{
+        modelEvents: {
             'change:perPage': 'perPageChangeHandler',
-            'change:curPage': 'triggerSetCollection'
+            'change:curPage': 'curPageChangeHandler'
         },
-        filterFunction: function(){
+        filterFunction: function () {
             return true;
         },
-        getPaginated: function(){
+        getPaginated: function () {
             var viewModel = this.view.model;
             var rowCollection = this.view.getOption('rowCollection');
             var options = viewModel.toJSON();
             var toReturn = this.getFiltered();
             var filteredCount = toReturn.length;
             var pageCount = Math.ceil(filteredCount / options.perPage)
-            var start =  (options.curPage - 1) * options.perPage;
+            var start = (options.curPage - 1) * options.perPage;
             var end = Math.min(filteredCount, start + options.perPage);
 
             viewModel.set({
-                totalCount:rowCollection.length,
-                filteredCount:filteredCount,
-                pageCount:pageCount,
-                start:start,
-                end:end,
-                nextEnabled:options.curPage !== pageCount,
-                prevEnabled:options.curPage > 1
+                totalCount: rowCollection.length,
+                filteredCount: filteredCount,
+                pageCount: pageCount,
+                start: start,
+                end: end,
+                nextEnabled: options.curPage !== pageCount,
+                prevEnabled: options.curPage > 1
             });
 
 
-            if(options.paginated){
+            if (options.paginated) {
                 toReturn = toReturn.splice(start, options.perPage);
             }
             return toReturn;
         },
-        getFiltered: function(){
+        getFiltered: function () {
             var rowCollection = this.view.getOption('rowCollection');
             return rowCollection.filter(this.filterFunction);
         },
-        onSetFilter: function(fn){
-            this.filterFunction=fn;
+        onSetFilter: function (fn) {
+            this.filterFunction = fn;
             this.view.model.set('curPage', 1);
             this.triggerSetCollection();
         },
-        onClearFilter: function(){
+        onClearFilter: function () {
             delete this.filterFunction;
             this.view.model.set('curPage', 1);
             this.triggerSetCollection();
         },
-        onBeforeRender: function(){
+        onBeforeRender: function () {
             this.triggerSetCollection();
         },
-        onResetCollection: function(){
+        onResetCollection: function () {
             this.view.collection.reset(this.getPaginated());
         },
-        onSetCollection: function(){
+        onSetCollection: function () {
             this.view.collection.set(this.getPaginated());
         },
-        triggerSetCollection: function(){
+        triggerSetCollection: function () {
             this.getPaginated();
             this.view.triggerMethod('set:collection');
         },
-        perPageChangeHandler: function(){
+        perPageChangeHandler: function () {
             var viewModel = this.view.model;
             var curPage = viewModel.get('curPage');
-            if(curPage!== 1){
+            if (curPage !== 1) {
                 viewModel.set('curPage', 1);
-            }else{
+            } else {
                 this.triggerSetCollection();
             }
 
+        },
+        curPageChangeHandler: function(){
+            this.triggerSetCollection();
         }
     })
 };
 
 var TableServerSorter = Behaviors.TableSorter.extend({
-    onSortCollection: function(sortKey, sortOrder){
+    onSortCollection: function (sortKey, sortOrder) {
         var view = this.view;
-        var collection = view.getOption('rowCollection');
-        collection.sortKey = sortKey;
-        collection.sortOrder = sortOrder;
+        view.model.set({
+            sortKey:sortKey,
+            sortOrder:sortOrder
+        });
+        this.view.triggerMethod('fetch:collection');
+    }
+})
+
+var TableServerFilterNPagination = Behaviors.TableFilterNPagination.extend({
+    getFiltered: function () {
+        var rowCollection = this.view.getOption('rowCollection');
+        return rowCollection.map(function(model){
+            return model.toJSON();
+        })
+    },
+    getPaginated: function () {
+
+        var viewModel = this.view.model;
+        var rowCollection = this.view.getOption('rowCollection');
+        if (!rowCollection.totalCount) {
+            return [];
+        }
+        var options = viewModel.toJSON();
+        console.log(options);
+        var toReturn = this.getFiltered();
+        var filteredCount = rowCollection.totalCount;
+        var pageCount = Math.ceil(filteredCount / options.perPage)
+        var start = (options.curPage - 1) * options.perPage;
+        var end = Math.min(filteredCount, start + options.perPage);
+
+        viewModel.set({
+            totalCount: filteredCount,
+            filteredCount: filteredCount,
+            pageCount: pageCount,
+            start: (start+1),
+            end: end,
+            nextEnabled: options.curPage !== pageCount,
+            prevEnabled: options.curPage > 1
+        });
+
+        console.log(viewModel.toJSON());
+        this.view.triggerMethod('pagination:render');
+        return toReturn;
+    },
+    perPageChangeHandler: function () {
+        var viewModel = this.view.model;
+        var curPage = viewModel.get('curPage');
+        if (curPage !== 1) {
+            viewModel.set('curPage', 1);
+        }
+        this.getPaginated();
+        this.view.triggerMethod('fetch:collection');
+
+    },
+    curPageChangeHandler: function(){
+        this.getPaginated();
         this.view.triggerMethod('fetch:collection');
     }
 })
 
 Behaviors.TableServerSorter = TableServerSorter
+Behaviors.TableServerFilterNPagination = TableServerFilterNPagination
 
 
 Marionette.Behaviors.behaviorsLookup = function () {

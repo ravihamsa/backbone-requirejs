@@ -32,7 +32,14 @@ define(function(){
         sortKey:'_id',
         sortOrder:'asc',
         filterKey:'_id',
-        filterQuery:''
+        filterQuery:'',
+        parse: function (resp) {
+            _.each(resp.result, function(item){
+                item.id = item._id;
+            })
+            this.totalCount = resp.total_count;
+            return resp.result;
+        }
     })
 
     var userCollection = new UserCollection();

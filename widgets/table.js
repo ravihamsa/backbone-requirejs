@@ -68,10 +68,12 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
 
     var TableModel = Backbone.Model.extend({
         defaults: {
-            perPage: 5,
+            perPage: 10,
             curPage: 1,
+            start:1,
+            offset:10,
             paginated: false,
-            perPageOptions: [5, 10, 20, 50, 100]
+            perPageOptions: [10, 20, 50, 100]
         }
     })
 
@@ -182,6 +184,9 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         constructor: function () {
             this.collection = new Backbone.Collection();
             this.filters = new Backbone.Collection();
+            this.collection.on('all', function(){
+                console.log(arguments, '----');
+            })
             Backbone.Marionette.LayoutView.apply(this, arguments);
         },
         template: tableTemplateFunction,
@@ -241,10 +246,8 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             var _this = this;
             WidgetView.apply(this, arguments);
             var rowCollection = this.getOption('rowCollection');
-
             rowCollection.on('sync', function (coll) {
-                _this.table.currentView.renderHeader();
-                _this.collection.reset(coll.models);
+                _this.triggerMethod('set:collection');
             })
            _this.triggerMethod('fetch:collection');
 
@@ -265,13 +268,41 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         },
         onFetchCollection: function(){
             var _this = this;
-
+            _this.updateCollectionParams();
             var rowCollection = this.getOption('rowCollection');
             var def = rowCollection.fetch();
             _this.showLoading();
             def.always(function(){
                 _this.hideLoading();
             })
+        },
+        updateCollectionParams: function(){
+            var rowCollection = this.getOption('rowCollection');
+            var attributes = this.model.toJSON();
+            rowCollection.start = attributes.start;
+            rowCollection.offset = attributes.perPage;
+            rowCollection.sortKey = attributes.sortKey;
+            rowCollection.sortOrder = attributes.sortOrder;
+            rowCollection.filterKey = attributes.filterKey;
+            rowCollection.filterQuery = attributes.filterQuery;
+        },
+        onResetCollection: function () {
+            if (this.footer.hasView()) {
+                this.footer.currentView.render();
+                this.table.currentView.renderHeader();
+            }
+        },
+        onSetCollection: function () {
+            if (this.footer.hasView()) {
+                this.footer.currentView.render();
+                this.table.currentView.renderHeader();
+            }
+
+        },
+        onPaginationRender: function(){
+            if (this.footer.hasView()) {
+                this.footer.currentView.render();
+            }
         },
         showLoading: function(){
             this.$el.addClass('loading');

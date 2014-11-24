@@ -22,11 +22,12 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
     })
 
 
+
     var UserServerSideTable = Table.ServerSideView.extend({
         behaviors: {
             TableServerSorter: {},
             TableRowRemover: {},
-            TableFilterNPagination: {
+            TableServerFilterNPagination: {
                 paginated: true
             }
         },
