@@ -68,12 +68,13 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
 
     var TableModel = Backbone.Model.extend({
         defaults: {
-            perPage: 10,
+            perPage: 5,
             curPage: 1,
             start:1,
             offset:10,
             paginated: false,
-            perPageOptions: [10, 20, 50, 100]
+            perPageOptions: [5,10, 20, 50, 100],
+            sortOrder:'asc'
         }
     })
 
@@ -134,12 +135,16 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
                     renderHTML: columnModel.get('renderHTML'),
                     sorted: rowCollection.sortKey === columnModel.id
                 }
+                //console.log(rowCollection, rowCollection.sortKey , columnModel.id,rowCollection.sortKey === columnModel.id);
                 if (obj.sorted) {
                     obj.sortOrder = rowCollection.sortOrder;
                 }
+
                 return obj;
 
             });
+
+            //console.log(valueArray);
             return {
                 collection: new Backbone.Collection(valueArray),
                 rowModel: rowModel
@@ -184,9 +189,6 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         constructor: function () {
             this.collection = new Backbone.Collection();
             this.filters = new Backbone.Collection();
-            this.collection.on('all', function(){
-                console.log(arguments, '----');
-            })
             Backbone.Marionette.LayoutView.apply(this, arguments);
         },
         template: tableTemplateFunction,
@@ -247,7 +249,7 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             WidgetView.apply(this, arguments);
             var rowCollection = this.getOption('rowCollection');
             rowCollection.on('sync', function (coll) {
-                _this.triggerMethod('set:collection');
+                _this.triggerMethod('reset:collection');
             })
            _this.triggerMethod('fetch:collection');
 
@@ -270,7 +272,7 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             var _this = this;
             _this.updateCollectionParams();
             var rowCollection = this.getOption('rowCollection');
-            var def = rowCollection.fetch();
+            var def = rowCollection.fetch({reset:true});
             _this.showLoading();
             def.always(function(){
                 _this.hideLoading();

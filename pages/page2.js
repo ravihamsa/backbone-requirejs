@@ -120,10 +120,9 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
 
             $.when( departments.def, designations.def).then(function(){
                 var userRowCollection = new user.PaginatedCollection();
-
                 var tableWidget2 = new UserServerSideTable({
                     rowCollection: userRowCollection,
-                    model: new Table.Model({paginated: true}),
+                    model: new Table.Model({paginated: true, sortKey:'firstname'}),
                     columns: columnsCollection
                 });
 

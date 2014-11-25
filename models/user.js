@@ -29,7 +29,7 @@ define(function(){
         urlTemplate: Handlebars.compile('/userapi/rest/users/?start={{start}}&offset={{offset}}&sortKey={{sortKey}}&sortOrder={{sortOrder}}&filterKey={{filterKey}}&filterQuery={{filterQuery}}'),
         start:1,
         offset:5,
-        sortKey:'_id',
+        sortKey:'firstname',
         sortOrder:'asc',
         filterKey:'_id',
         filterQuery:'',

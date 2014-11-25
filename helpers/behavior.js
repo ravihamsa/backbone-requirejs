@@ -210,9 +210,11 @@ var Behaviors = {
             this.triggerSetCollection();
         },
         onResetCollection: function () {
+
             this.view.collection.reset(this.getPaginated());
         },
         onSetCollection: function () {
+
             this.view.collection.set(this.getPaginated());
         },
         triggerSetCollection: function () {
@@ -261,7 +263,7 @@ var TableServerFilterNPagination = Behaviors.TableFilterNPagination.extend({
             return [];
         }
         var options = viewModel.toJSON();
-        console.log(options);
+
         var toReturn = this.getFiltered();
         var filteredCount = rowCollection.totalCount;
         var pageCount = Math.ceil(filteredCount / options.perPage)
@@ -278,7 +280,7 @@ var TableServerFilterNPagination = Behaviors.TableFilterNPagination.extend({
             prevEnabled: options.curPage > 1
         });
 
-        console.log(viewModel.toJSON());
+        //console.log(viewModel.toJSON());
         this.view.triggerMethod('pagination:render');
         return toReturn;
     },
