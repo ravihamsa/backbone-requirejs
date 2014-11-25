@@ -1,7 +1,9 @@
-define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate, paginationTemplate) {
+define(['text!./table.html', 'text!./pagination.html', 'widgets/dropdown'], function (tableTemplate, paginationTemplate, DropDown) {
 
     var tableTemplateFunction = Handlebars.compile(tableTemplate);
     var paginationTemplateFunction = Handlebars.compile(paginationTemplate);
+
+    var Selectable = Backbone.Marionette.Selectable;
 
     var ColumnModel = Backbone.Model.extend({
         defaults: {
@@ -70,22 +72,62 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         defaults: {
             perPage: 5,
             curPage: 1,
-            start:1,
-            offset:10,
+            start: 1,
+            offset: 10,
             paginated: false,
-            perPageOptions: [5,10, 20, 50, 100],
-            sortOrder:'asc'
+            pageCount: 1,
+            perPageOptions: [5, 10, 20, 50, 100],
+            sortOrder: 'asc'
         }
     })
 
 
-    var PaginationView = Backbone.Marionette.ItemView.extend({
+    var PaginationView = Backbone.Marionette.LayoutView.extend({
         behaviors: {
             AnchorActions: {}
         },
+        regions: {
+            perPage: '.drop-down-container'
+        },
         template: paginationTemplateFunction,
-        events: {
-            'change select': 'selectChangeHandler'
+
+        onShow: function () {
+
+        },
+
+        onBeforeRender: function () {
+            this.perPage.reset();
+        },
+
+        onRender: function () {
+            var _this = this;
+            var json = this.model.toJSON();
+
+
+            var perPageOptions = _.map(json.perPageOptions, function (item) {
+                return {
+                    id: item,
+                    name: item,
+                    selected: item === json.perPage
+                }
+            })
+
+
+            var travelTypeModel = new Selectable.SingleSelectModel({
+                items: new Selectable.SingleSelectCollection(perPageOptions)
+            });
+
+            var travelTypeView = new DropDown.SingleSelect({
+                model: travelTypeModel
+            })
+
+
+            this.perPage.show(travelTypeView);
+
+            this.listenTo(travelTypeModel, 'selectionChange', function(selectedItem){
+                _this.model.set('perPage', selectedItem.id);
+            })
+
         },
         serializeData: function () {
             var json = this.model.toJSON();
@@ -101,9 +143,7 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
 
             return json;
         },
-        selectChangeHandler: function () {
-            this.model.set('perPage', +(this.$('select').val()));
-        },
+
         onActionNextPage: function () {
             var json = this.model.toJSON();
             if (json.nextEnabled) {
@@ -244,14 +284,14 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
 
 
     var ServerSideTableView = WidgetView.extend({
-        constructor: function(){
+        constructor: function () {
             var _this = this;
             WidgetView.apply(this, arguments);
             var rowCollection = this.getOption('rowCollection');
             rowCollection.on('sync', function (coll) {
                 _this.triggerMethod('reset:collection');
             })
-           _this.triggerMethod('fetch:collection');
+            _this.triggerMethod('fetch:collection');
 
         },
         showBody: function () {
@@ -268,17 +308,17 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             })
             this.table.show(tableView);
         },
-        onFetchCollection: function(){
+        onFetchCollection: function () {
             var _this = this;
             _this.updateCollectionParams();
             var rowCollection = this.getOption('rowCollection');
-            var def = rowCollection.fetch({reset:true});
+            var def = rowCollection.fetch({reset: true});
             _this.showLoading();
-            def.always(function(){
+            def.always(function () {
                 _this.hideLoading();
             })
         },
-        updateCollectionParams: function(){
+        updateCollectionParams: function () {
             var rowCollection = this.getOption('rowCollection');
             var attributes = this.model.toJSON();
             rowCollection.start = attributes.start;
@@ -301,15 +341,15 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             }
 
         },
-        onPaginationRender: function(){
+        onPaginationRender: function () {
             if (this.footer.hasView()) {
                 this.footer.currentView.render();
             }
         },
-        showLoading: function(){
+        showLoading: function () {
             this.$el.addClass('loading');
         },
-        hideLoading: function(){
+        hideLoading: function () {
             this.$el.removeClass('loading');
         }
 

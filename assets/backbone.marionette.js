@@ -2659,6 +2659,7 @@
   });
   
 
+
   // Behavior
   // -----------
   
@@ -3426,5 +3427,472 @@
   });
   
 
+
+  /* jshint maxlen: 134, nonew: false */
+  // Marionette.Model
+  // ---------------
+  
+  // The core view class that other Marionette models extend from.
+  Marionette.Model = Backbone.Model.extend({
+      constructor: function (options) {
+          this.options = _.extend({}, _.result(this, 'options'), _.isFunction(options) ? options.call(this) : options);
+          Backbone.Model.apply(this, arguments);
+      },
+      is: function (attribute) {
+          return this.get(attribute) === true;
+      },
+      isNot: function (attribute) {
+          return this.get(attribute) === false;
+      },
+      isEqual: function (attribute, value) {
+          return this.get(attribute) === value;
+      },
+      isNotEqual: function (attribute, value) {
+          return this.get(attribute) !== value;
+      },
+      removeSelf: function () {
+          if (this.collection) {
+              this.collection.remove(this);
+          }
+      },
+      isDefault: function (attribute, value) {
+          return this.defaults[attribute] === value;
+      },
+      setDefault: function (attribute, value) {
+          this.defaults[attribute] = value;
+      },
+      isTemp: function () {
+          return this.id.indexOf && this.id.indexOf('__tmp_') === 0;
+      },
+      /* jshint ignore:start */
+      reset: function (key, val, options) {
+          var attr, attrs, unset, changes, silent, changing, prev, current, missing;
+          if (key == null) return this;
+  
+          // Handle both `"key", value` and `{key: value}` -style arguments.
+          if (typeof key === 'object') {
+              attrs = key;
+              options = val;
+          } else {
+              (attrs = {})[key] = val;
+          }
+  
+          options || (options = {});
+  
+          // Run validation.
+          if (!this._validate(attrs, options)) return false;
+  
+          // Extract attributes and options.
+          unset = options.unset;
+          silent = options.silent;
+          changes = [];
+  
+          changing = this._changing;
+          this._changing = true;
+  
+          if (!changing) {
+              this._previousAttributes = _.clone(this.attributes);
+              this.changed = {};
+          }
+          current = this.attributes, prev = this._previousAttributes;
+  
+          missing = _.omit(this._previousAttributes, _.keys(attrs));
+  
+          // Check for changes of `id`.
+          if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
+  
+  
+          for (attr in missing) {
+              val = attrs[attr];
+              if (!_.isEqual(current[attr], val)) changes.push(attr);
+              if (!_.isEqual(prev[attr], val)) {
+                  this.changed[attr] = val;
+              } else {
+                  delete this.changed[attr];
+              }
+              delete current[attr]
+          }
+  
+  
+          // For each `set` attribute, update or delete the current value.
+          for (attr in attrs) {
+              val = attrs[attr];
+              if (!_.isEqual(current[attr], val)) changes.push(attr);
+              if (!_.isEqual(prev[attr], val)) {
+                  this.changed[attr] = val;
+              } else {
+                  delete this.changed[attr];
+              }
+              unset ? delete current[attr] : current[attr] = val;
+          }
+  
+          // Trigger all relevant attribute changes.
+          if (!silent) {
+              if (changes.length) this._pending = true;
+              for (var i = 0, l = changes.length; i < l; i++) {
+                  this.trigger('change:' + changes[i], this, current[changes[i]], options);
+              }
+          }
+  
+          // You might be wondering why there's a `while` loop here. Changes can
+          // be recursively nested within `"change"` events.
+          if (changing) return this;
+          if (!silent) {
+              while (this._pending) {
+                  this._pending = false;
+                  this.trigger('change', this, options);
+              }
+          }
+          this._pending = false;
+          this._changing = false;
+          return this;
+  
+      },
+      /* jshint ignore:end */
+      triggerMethod: Marionette.triggerMethod,
+      normalizeMethods: Marionette.normalizeMethods,
+      getOption: Marionette.proxyGetOption
+  });
+  
+  Marionette.templateLookup = function () {
+      return 'no template';
+  };
+  
+  Marionette.stringLookup = function () {
+      return 'no string index defined';
+  };
+  
+  /* jshint maxlen: 134, nonew: false */
+  // Marionette.SelectableModel
+  // ---------------
+  
+  var ItemModel = Marionette.Model.extend({
+      defaults: {
+          selected: false, //selected 1, unselected 0
+          showIcon: true,
+          selectable:true
+      },
+      select: function () {
+          this.set('selected', true);
+      },
+      deselect: function () {
+          this.set('selected', false);
+      },
+      toggleSelect: function () {
+          var selected = this.is('selected');
+          if(selected){
+              this.deselect();
+          }else{
+              this.select();
+          }
+      },
+      triggerSelect: function(){
+          this.collection.trigger('selectItem', this);
+      },
+      triggerDeSelect: function(){
+          this.collection.trigger('deSelectItem', this);
+      },
+      triggerToggleSelect: function(){
+          this.collection.trigger('toggleSelectItem', this);
+      },
+      triggerPartialSelect: function(){
+          this.collection.trigger('partialSelectItem', this);
+      }
+  });
+  
+  
+  
+  var ItemView = Marionette.ItemView.extend({
+      tagName: 'li',
+      className: 'list-item',
+      getTemplate:function(){
+          return Marionette.templateLookup('selectable.item');
+      },
+      behaviors:{
+          AnchorActions:{},
+          TriggerModelEvents:{}
+      },
+      onActionSelect:function(){
+          if (this.model.is('selectable')) {
+              this.model.triggerSelect();
+          }
+      },
+      onChange: function () {
+          this.syncSelection();
+      },
+      onShow: function(){
+          this.syncSelection();
+      },
+      syncSelection: function(){
+          this.$el.toggleClass('active', this.model.is('selected'));
+          this.$el.toggleClass('disabled', this.model.isNot('selectable'));
+      }
+  
+  });
+  
+  
+  var SingleSelectItemView = ItemView.extend({
+  
+  });
+  
+  var MultiSelectItemView = ItemView.extend({
+      onActionSelect: function(){
+          if (this.model.is('selectable')) {
+              this.model.triggerToggleSelect();
+          }
+      }
+  });
+  
+  var SingleSelectCollection = Backbone.Collection.extend({
+      model:ItemModel
+  });
+  
+  
+  
+  var MultiSelectCollection = Backbone.Collection.extend({
+      model:ItemModel
+  });
+  
+  
+  var SingleSelectModel = Marionette.Model.extend({
+      constructor: function(){
+          this._selected = null;
+          Marionette.Model.apply(this, arguments);
+          this.listCollection = this.getOption('items') || new SingleSelectCollection();
+          this.setupSelection();
+      },
+      resetItems: function(array){
+          this.listCollection.reset(array);
+          this.readSelection();
+      },
+      setupSelection: function(){
+          var _this = this;
+          var coll = _this.listCollection;
+          _this.listenTo(coll, 'selectItem', function(model){
+              if(this._selected){
+                  this._selected.deselect();
+              }
+              this.setSelected(model);
+              model.select();
+          });
+          _this.readSelection();
+      },
+      readSelection: function(){
+          this.setSelected(this.listCollection.find(function(model){return model.is('selected');}));
+      },
+      setSelected: function(model){
+          var prevSelected = this._selected;
+          if(!this._selected || this._selected.id !== model.id){
+              this._selected = model;
+              this.trigger('selectionChange', model, prevSelected);
+          }
+      },
+      setSelectedById: function(modelId){
+          this.setSelected(this.listCollection.get(modelId));
+      },
+      getSelected: function(){
+          return this._selected;
+      },
+      getSelectedId: function(){
+          if(this._selected){
+              return this._selected.id;
+          }
+      },
+      getSelectedName: function(){
+          if(this._selected){
+              return this._selected.get('name');
+          }else{
+              return Marionette.stringLookup('nothing.selected');
+          }
+  
+      },
+      getListLength: function(){
+          return this.listCollection.length;
+      },
+      getCollection: function(){
+          return this.get('items');
+      },
+      getSelectedIndex: function(){
+          return this.listCollection.indexOf(this.getSelected());
+      },
+      getItemById: function(id){
+          return this.listCollection.get(id);
+      }
+  });
+  
+  var MultiSelectModel = Marionette.Model.extend({
+      constructor: function(){
+          this._selected=[];
+          this._selectedIndex = {};
+          Marionette.Model.apply(this, arguments);
+          this.listCollection = this.getOption('items') ||  new MultiSelectCollection();
+          this.setupSelection();
+      },
+      setupSelection: function(){
+          var _this = this;
+          var coll = _this.listCollection;
+          _this.listenTo(coll, 'selectItem', function(model){
+              _this._selectedIndex[model.id]=model;
+              model.select();
+              _this.trigger('selectionChange');
+          });
+  
+          _this.listenTo(coll, 'deSelectItem', function(model){
+              delete _this._selectedIndex[model.id];
+              model.deselect();
+              _this.trigger('selectionChange');
+          });
+  
+          _this.listenTo(coll, 'toggleSelectItem', function(model){
+              if(_this._selectedIndex[model.id]){
+                  coll.trigger('deSelectItem', model);
+              }else{
+                  coll.trigger('selectItem', model);
+              }
+          });
+          _this.readSelection();
+      },
+      readSelection: function(){
+          this._selectedIndex = {};
+          var coll = this.listCollection;
+          coll.each(function(model){
+              if(model.is('selected')){
+                  coll.trigger('selectItem', model);
+              }
+          });
+          this.trigger('selectionChange');
+      },
+      getSelected:function(){
+          return _.values(this._selectedIndex);
+      },
+      getSelectedIds:function(){
+          return _.keys(this._selectedIndex);
+      },
+      getSelectedNames: function(){
+          return _.map(this.getSelected(), function(model){
+              return model.get('name');
+          });
+      },
+      getCollection: function(){
+          return this.get('items');
+      },
+      getListLength: function(){
+          return this.listCollection.length;
+      }
+  });
+  
+  var SingleSelectSummaryView = Marionette.ItemView.extend({
+      tagName:'span',
+      modelEvents:{
+        selectionChange:'render'
+      },
+      getTemplate:function(){
+          return Marionette.templateLookup('single.select.summary');
+      },
+      serializeData: function(){
+          var model = this.model;
+          var summary;
+          if(model.getListLength() === 0){
+              summary =  Marionette.stringLookup('no.options');
+          }else if(!model.getSelected()){
+              summary = Marionette.stringLookup('no.selection');
+          }else{
+              summary = model.getSelectedName();
+          }
+          return {
+              summary:summary
+          };
+      }
+  });
+  
+  var MultiSelectSummaryView = SingleSelectSummaryView.extend({
+      tagName:'span',
+      getTemplate:function(){
+          return Marionette.templateLookup('multi.select.summary');
+      },
+      serializeData:function(){
+          var model = this.model;
+          var summary, selectedCount = 0, selected = model.getSelected();
+          if(model.getListLength() === 0){
+              summary =  Marionette.stringLookup('no.options');
+          }else if(selected.length === 0){
+              summary = Marionette.stringLookup('no.selection');
+          }else{
+              selectedCount = selected.length;
+              if(selected.length < 3){
+                  summary = model.getSelectedNames();
+              }else{
+                  summary = Marionette.stringLookup('selected');
+              }
+          }
+          return {
+              summary:summary,
+              selectedCount:selectedCount
+          };
+      }
+  });
+  
+  var SingleSelectView = Marionette.LayoutView.extend({
+      template: _.template('<div class="js-list-container"> </div><div class="js-summary-container single-select-list"> </div>'),
+      regions:{
+          listContainer:'.js-list-container',
+          summaryContainer:'.js-summary-container'
+      },
+      onShow: function(){
+          var CollectionView = this.getOption('CollectionView') || Marionette.CollectionView;
+          var collection = this.model.listCollection;
+          this.listContainer.show(new CollectionView({
+              collection:collection,
+              childView:this.getOption('childView') || SingleSelectItemView
+          }));
+          var showSummary = this.getOption('showSummary') || false;
+          if(showSummary){
+              this.summaryContainer.show(new SingleSelectSummaryView({
+                  model:this.model
+              }));
+          }
+  
+      }
+  });
+  
+  
+  var MultiSelectView = SingleSelectView.extend({
+      template: _.template('<div class="js-list-container"> </div><div class="js-summary-container multi-select-list"> </div>'),
+      onShow: function(){
+          var CollectionView = this.getOption('CollectionView') || Marionette.CollectionView;
+          var collection = this.model.listCollection;
+          this.listContainer.show(new CollectionView({
+              collection:collection,
+              childView:MultiSelectItemView
+          }));
+  
+          var showSummary = this.getOption('showSummary') || false;
+          if(showSummary){
+              this.summaryContainer.show(new MultiSelectSummaryView({
+                  model:this.model
+              }));
+          }
+      }
+  });
+  
+  
+  
+  
+  Marionette.Selectable = {
+      ItemModel:ItemModel,
+      ItemView:ItemView,
+      SingleSelectItemView:SingleSelectItemView,
+      SingleSelectCollection:SingleSelectCollection,
+      SingleSelectView:SingleSelectView,
+      SingleSelectSummaryView:SingleSelectSummaryView,
+      SingleSelectModel:SingleSelectModel,
+      MultiSelectItemView:MultiSelectItemView,
+      MultiSelectCollection:MultiSelectCollection,
+      MultiSelectView:MultiSelectView,
+      MultiSelectModel:MultiSelectModel,
+      MultiSelectSummaryView:MultiSelectSummaryView
+  };
+  
+    
   return Marionette;
 }));
