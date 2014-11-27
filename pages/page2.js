@@ -126,8 +126,11 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
 
             $.when( departments.def, designations.def).then(function(){
                 var userRowCollection = new user.PaginatedCollection();
-                userRowCollection.on('change:selected', function(model, value){
-                    console.log(model.cid, value, model.id)
+                userRowCollection.on('all', function(model, value){
+                    var tmp = userRowCollection.map(function(model){
+                        return model.cid;
+                    })
+                    console.log( model, tmp)
                 });
                 var tableWidget2 = new UserServerSideTable({
                     rowCollection: userRowCollection,

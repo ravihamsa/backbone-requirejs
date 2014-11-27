@@ -2,7 +2,7 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
 
     var tableTemplateFunction = Handlebars.compile(tableTemplate);
     var paginationTemplateFunction = Handlebars.compile(paginationTemplate);
-
+    
 
     var ColumnModel = Backbone.Model.extend({
         defaults: {
@@ -61,7 +61,7 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             var rowModel = this.getOption('rowModel');
             var selected = !rowModel.get('selected');
             rowModel.set('selected', selected);
-            console.log(rowModel);
+
             //this.$('.squaredThree label').toggleClass('checked', selected)
         }
     })
@@ -74,9 +74,12 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         },
         toggleSelected: function () {
             var rowCollection = this.getOption('rowCollection');
+
             var selectedModels = rowCollection.where({selected:true});
-            var model = this.model;
             var selected =  !(selectedModels.length === rowCollection.length);
+            console.log(rowCollection.map(function(model){
+                return model.cid
+            }));
             rowCollection.each(function (model) {
                 model.set('selected', selected);
             })
@@ -101,10 +104,10 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             this.listenTo(rowModel, 'change', this.updateData);
         },
         updateData: function(){
-
             var columnsCollection = this.getOption('columns');
             var rowModel = this.getOption('rowModel');
             var rowCollection = rowModel.collection;
+
 
             var valueArray = columnsCollection.map(function (columnModel) {
                 var formatter = columnModel.get('formatter') || _.identity;
@@ -212,9 +215,6 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         childViewContainer: 'tbody',
         childViewOptions: function (rowModel, index) {
 
-
-
-
             //console.log(valueArray);
             return {
                 collection: new Backbone.Collection(),
@@ -228,12 +228,13 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             this.renderHeader();
         },
         renderHeader: function () {
+            var rowCollection =  this.getOption('rowCollection')
+
             if (!this.headerView) {
-                var columnCollection = this.getColumnCollection();
                 var columnCollection = this.getColumnCollection();
                 var headerView = new ColumnCollectionView({
                     collection: columnCollection,
-                    rowCollection: this.getOption('rowCollection')
+                    rowCollection: rowCollection
                 });
                 this.headerView = headerView;
                 this.$('thead').append(headerView.render().el);
@@ -336,10 +337,11 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             var rowCollection = this.getOption('rowCollection');
             rowCollection.sortKey = sortKey;
             rowCollection.sortOrder = sortOrder;
-            console.log(rowCollection, 'rowCollection')
+
+
             var tableView = new TableView({
                 rowCollection: rowCollection,
-                collection: this.collection,
+                collection: rowCollection,
                 model: this.model,
                 columns: this.getOption('columns')
             })
