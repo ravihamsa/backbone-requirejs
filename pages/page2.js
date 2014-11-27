@@ -63,6 +63,10 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
             var _this = this;
 
             var columnsCollection = new Table.ColumnCollection([
+                {
+                    id:'id',
+                    type:'selectable'
+                },
                 {id: 'firstname',
                     name: 'Full Name',
                     sortable: true,
@@ -102,6 +106,8 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
                     return '<a href="#editUser/userId=' + this.id + '">edit</a>';
                 }}
             ]);
+
+
 /*
 
             $.when(user.userDef, departments.def, designations.def).then(function () {

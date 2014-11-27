@@ -3,9 +3,11 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
     var tableTemplateFunction = Handlebars.compile(tableTemplate);
     var paginationTemplateFunction = Handlebars.compile(paginationTemplate);
 
+
     var ColumnModel = Backbone.Model.extend({
         defaults: {
-            sortable: false
+            sortable: false,
+            type: 'value'
         }
     })
 
@@ -14,7 +16,7 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
     })
 
 
-    var CellView = Backbone.Marionette.ItemView.extend({
+    var ValueView = Backbone.Marionette.ItemView.extend({
         tagName: 'td',
         template: Handlebars.compile(' {{#if renderHTML}} {{{value}}} {{else}} {{value}} {{/if}}'),
         className: function () {
@@ -27,18 +29,7 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         }
     })
 
-    var RowView = Backbone.Marionette.CollectionView.extend({
-        tagName: 'tr',
-        childView: CellView,
-        childViewOptions: function () {
-            return {
-                rowModel: this.getOption('rowModel')
-            }
-        },
-        className: 'row'
-    });
-
-    var ColumnItemView = Backbone.Marionette.ItemView.extend({
+    var HeaderValueView = Backbone.Marionette.ItemView.extend({
         tagName: 'th',
         template: Handlebars.compile('{{name}}'),
         className: function () {
@@ -60,9 +51,103 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         }
     });
 
+
+    var SelectableValueView = ValueView.extend({
+        template: Handlebars.compile('{{stringify this}}<div class="squaredThree"><label class="{{#if selected}}checked{{/if}}"></label></div>'),
+        events: {
+            'click label': 'toggleSelected'
+        },
+        toggleSelected: function () {
+            var rowModel = this.getOption('rowModel');
+            var selected = !rowModel.get('selected');
+            rowModel.set('selected', selected);
+            console.log(rowModel);
+            //this.$('.squaredThree label').toggleClass('checked', selected)
+        }
+    })
+
+
+    var SelectableHeaderValueView = HeaderValueView.extend({
+        template: Handlebars.compile(' <div class="squaredThree"><label class="{{#if selected}}checked{{/if}}"></label></div>'),
+        events: {
+            'click label': 'toggleSelected'
+        },
+        toggleSelected: function () {
+            var rowCollection = this.getOption('rowCollection');
+            var model = this.model;
+            var selected = !model.get('selected');
+            rowCollection.each(function (model) {
+                console.log(model, selected);
+                model.set('selected', selected);
+            })
+            this.$('.squaredThree label').toggleClass('checked', selected)
+        }
+    })
+
+    var typeViewIndex = {
+        'value': ValueView,
+        'selectable': SelectableValueView
+    }
+
+    var typeHeaderViewIndex = {
+        'value': HeaderValueView,
+        'selectable': SelectableHeaderValueView
+    }
+
+    var RowView = Backbone.Marionette.CollectionView.extend({
+        onShow: function () {
+            this.updateData();
+            var rowModel = this.getOption('rowModel');
+            this.listenTo(rowModel, 'change', this.updateData);
+        },
+        updateData: function(){
+            var columnsCollection = this.getOption('columns');
+            var rowModel = this.getOption('rowModel');
+            var rowCollection = rowModel.collection;
+
+            var valueArray = columnsCollection.map(function (columnModel) {
+                var formatter = columnModel.get('formatter') || _.identity;
+                var obj = {
+                    id: columnModel.id,
+                    type: columnModel.get('type'),
+                    value: formatter.call(rowModel, rowModel.get(columnModel.id)),
+                    renderHTML: columnModel.get('renderHTML'),
+                    sorted: rowCollection.sortKey === columnModel.id,
+                    selected: rowModel.get('selected') === true
+                }
+                //console.log(rowCollection, rowCollection.sortKey , columnModel.id,rowCollection.sortKey === columnModel.id);
+                if (obj.sorted) {
+                    obj.sortOrder = rowCollection.sortOrder;
+                }
+
+                return obj;
+            });
+
+            this.collection.reset(valueArray);
+        },
+        tagName: 'tr',
+        getChildView: function (item) {
+            return typeViewIndex[item.get('type')] || ValueView;
+        },
+        childViewOptions: function (model) {
+            return {
+                rowModel: this.getOption('rowModel')
+            }
+        },
+        className: 'row'
+    });
+
+
     var ColumnCollectionView = Backbone.Marionette.CollectionView.extend({
         tagName: 'tr',
-        childView: ColumnItemView
+        getChildView: function (item) {
+            return typeHeaderViewIndex[item.get('type')] || HeaderValueView;
+        },
+        childViewOptions: function (model) {
+            return {
+                rowCollection: this.getOption('rowCollection')
+            }
+        }
     });
 
 
@@ -70,11 +155,11 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         defaults: {
             perPage: 5,
             curPage: 1,
-            start:1,
-            offset:10,
+            start: 1,
+            offset: 10,
             paginated: false,
-            perPageOptions: [5,10, 20, 50, 100],
-            sortOrder:'asc'
+            perPageOptions: [5, 10, 20, 50, 100],
+            sortOrder: 'asc'
         }
     })
 
@@ -125,39 +210,29 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         childView: RowView,
         childViewContainer: 'tbody',
         childViewOptions: function (rowModel, index) {
-            var rowCollection = this.getOption('rowCollection');
-            var columnsCollection = this.getOption('columns');
-            var valueArray = columnsCollection.map(function (columnModel) {
-                var formatter = columnModel.get('formatter') || _.identity;
-                var obj = {
-                    id: columnModel.id,
-                    value: formatter.call(rowModel, rowModel.get(columnModel.id)),
-                    renderHTML: columnModel.get('renderHTML'),
-                    sorted: rowCollection.sortKey === columnModel.id
-                }
-                //console.log(rowCollection, rowCollection.sortKey , columnModel.id,rowCollection.sortKey === columnModel.id);
-                if (obj.sorted) {
-                    obj.sortOrder = rowCollection.sortOrder;
-                }
 
-                return obj;
 
-            });
+
 
             //console.log(valueArray);
             return {
-                collection: new Backbone.Collection(valueArray),
-                rowModel: rowModel
+                collection: new Backbone.Collection(),
+                rowModel: rowModel,
+                columns:this.getOption('columns')
+
             };
         },
+
         onRender: function () {
             this.renderHeader();
         },
         renderHeader: function () {
             if (!this.headerView) {
                 var columnCollection = this.getColumnCollection();
+
                 var headerView = new ColumnCollectionView({
-                    collection: columnCollection
+                    collection: columnCollection,
+                    rowCollection: this.getOption('rowCollection')
                 });
                 this.headerView = headerView;
                 this.$('thead').append(headerView.render().el);
@@ -244,14 +319,14 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
 
 
     var ServerSideTableView = WidgetView.extend({
-        constructor: function(){
+        constructor: function () {
             var _this = this;
             WidgetView.apply(this, arguments);
             var rowCollection = this.getOption('rowCollection');
             rowCollection.on('sync', function (coll) {
                 _this.triggerMethod('reset:collection');
             })
-           _this.triggerMethod('fetch:collection');
+            _this.triggerMethod('fetch:collection');
 
         },
         showBody: function () {
@@ -268,17 +343,17 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             })
             this.table.show(tableView);
         },
-        onFetchCollection: function(){
+        onFetchCollection: function () {
             var _this = this;
             _this.updateCollectionParams();
             var rowCollection = this.getOption('rowCollection');
-            var def = rowCollection.fetch({reset:true});
+            var def = rowCollection.fetch({reset: true});
             _this.showLoading();
-            def.always(function(){
+            def.always(function () {
                 _this.hideLoading();
             })
         },
-        updateCollectionParams: function(){
+        updateCollectionParams: function () {
             var rowCollection = this.getOption('rowCollection');
             var attributes = this.model.toJSON();
             rowCollection.start = attributes.start;
@@ -301,15 +376,15 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             }
 
         },
-        onPaginationRender: function(){
+        onPaginationRender: function () {
             if (this.footer.hasView()) {
                 this.footer.currentView.render();
             }
         },
-        showLoading: function(){
+        showLoading: function () {
             this.$el.addClass('loading');
         },
-        hideLoading: function(){
+        hideLoading: function () {
             this.$el.removeClass('loading');
         }
 
@@ -318,9 +393,17 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
 
     return {
         View: WidgetView,
+        ValueView: ValueView,
+        HeaderValueView: HeaderValueView,
         ServerSideView: ServerSideTableView,
         Model: TableModel,
-        ColumnCollection: ColumnCollection
+        ColumnCollection: ColumnCollection,
+        addToTypeView: function (type, CellView, CellHeaderView) {
+            typeViewIndex[type] = CellView;
+            if (CellHeaderView) {
+                typeHeaderViewIndex[type] = CellHeaderView;
+            }
+        }
     };
 
 });
