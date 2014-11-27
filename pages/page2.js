@@ -126,6 +126,9 @@ define(['pages/defaultPage', 'widgets/table', 'models/user', 'models/departments
 
             $.when( departments.def, designations.def).then(function(){
                 var userRowCollection = new user.PaginatedCollection();
+                userRowCollection.on('change:selected', function(model, value){
+                    console.log(model.cid, value, model.id)
+                });
                 var tableWidget2 = new UserServerSideTable({
                     rowCollection: userRowCollection,
                     model: new Table.Model({paginated: true, sortKey:'firstname'}),

@@ -74,10 +74,10 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         },
         toggleSelected: function () {
             var rowCollection = this.getOption('rowCollection');
+            var selectedModels = rowCollection.where({selected:true});
             var model = this.model;
-            var selected = !model.get('selected');
+            var selected =  !(selectedModels.length === rowCollection.length);
             rowCollection.each(function (model) {
-                console.log(model, selected);
                 model.set('selected', selected);
             })
             this.$('.squaredThree label').toggleClass('checked', selected)
@@ -101,6 +101,7 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             this.listenTo(rowModel, 'change', this.updateData);
         },
         updateData: function(){
+
             var columnsCollection = this.getOption('columns');
             var rowModel = this.getOption('rowModel');
             var rowCollection = rowModel.collection;
@@ -229,7 +230,7 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
         renderHeader: function () {
             if (!this.headerView) {
                 var columnCollection = this.getColumnCollection();
-
+                var columnCollection = this.getColumnCollection();
                 var headerView = new ColumnCollectionView({
                     collection: columnCollection,
                     rowCollection: this.getOption('rowCollection')
@@ -335,6 +336,7 @@ define(['text!./table.html', 'text!./pagination.html'], function (tableTemplate,
             var rowCollection = this.getOption('rowCollection');
             rowCollection.sortKey = sortKey;
             rowCollection.sortOrder = sortOrder;
+            console.log(rowCollection, 'rowCollection')
             var tableView = new TableView({
                 rowCollection: rowCollection,
                 collection: this.collection,
